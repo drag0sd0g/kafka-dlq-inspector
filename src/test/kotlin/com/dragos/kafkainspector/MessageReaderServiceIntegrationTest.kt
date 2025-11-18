@@ -9,6 +9,7 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,20 +19,21 @@ import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.utility.DockerImageName
 import java.util.*
 
 @SpringBootTest
 @Testcontainers
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MessageReaderServiceIntegrationTest {
 
     companion object {
         @Container
-        val kafka = KafkaContainer("confluentinc/cp-kafka:7.5.1")
+        @JvmStatic
+        val kafka = KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.5.1"))
 
         @JvmStatic
         @DynamicPropertySource
-        fun props(registry: DynamicPropertyRegistry) {
+        fun kafkaProps(registry: DynamicPropertyRegistry) {
             registry.add("spring.kafka.bootstrap-servers") { kafka.bootstrapServers }
             registry.add("spring.kafka.consumer.group-id") { "test-group" }
             registry.add("kafka.dlq.topic-pattern") { "test-dlq" }

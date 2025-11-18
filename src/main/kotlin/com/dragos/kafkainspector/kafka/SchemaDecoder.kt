@@ -32,10 +32,11 @@ class CompositeSchemaDecoder(private val kafkaProperties: KafkaProperties) : Sch
 
     private fun decodeAvro(bytes: ByteArray): Any? = try {
         val props = Properties()
-        props.putAll(kafkaProperties.buildConsumerProperties())
+        props.putAll(kafkaProperties.consumer.properties.toMutableMap())
         props[AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG] =
             kafkaProperties.properties[AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG]
-        val deserializer = KafkaAvroDeserializer().apply { configure(props as Map<String, *>, false) }
+        val mapProps = props.entries.associate { it.key.toString() to it.value }
+        val deserializer = KafkaAvroDeserializer().apply { configure(mapProps, false) }
         val result = deserializer.deserialize(null, bytes)
         if (result is GenericRecord) result else result?.toString()
     } catch (_: Exception) {

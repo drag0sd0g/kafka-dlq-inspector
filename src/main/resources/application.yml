@@ -2,7 +2,8 @@ spring:
   application:
     name: kafka-dlq-inspector
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers:
+      - localhost:9092
     properties:
       schema.registry.url: http://localhost:8081
     consumer:
@@ -23,7 +24,7 @@ management:
       application: kafka-dlq-inspector
 kafka:
   dlq:
-    topic-pattern: ".*\.dlq"
+    topic-pattern: ".*\\.dlq"
     poll-size: 500
     poll-timeout-ms: 1000
     max-records: 1000

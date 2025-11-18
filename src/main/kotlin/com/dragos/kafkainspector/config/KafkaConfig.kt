@@ -19,11 +19,11 @@ import java.time.Duration
 class KafkaConfig(private val properties: KafkaProperties) {
 
     @Bean
-    fun admin(): KafkaAdmin = KafkaAdmin(properties.buildAdminProperties())
+    fun admin(): KafkaAdmin = KafkaAdmin(properties.buildAdminProperties(null))
 
     @Bean
     fun consumerFactory(): ConsumerFactory<ByteArray, ByteArray> {
-        val config = properties.buildConsumerProperties().toMutableMap()
+        val config = properties.buildConsumerProperties(null).toMutableMap()
         config[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = ByteArrayDeserializer::class.java
         config[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = ByteArrayDeserializer::class.java
         config[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
@@ -32,7 +32,7 @@ class KafkaConfig(private val properties: KafkaProperties) {
 
     @Bean
     fun producerFactory(): ProducerFactory<ByteArray, ByteArray> {
-        val config = properties.buildProducerProperties().toMutableMap()
+        val config = properties.buildProducerProperties(null).toMutableMap()
         config[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = ByteArraySerializer::class.java
         config[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = ByteArraySerializer::class.java
         return DefaultKafkaProducerFactory(config)
@@ -53,5 +53,5 @@ class KafkaConfig(private val properties: KafkaProperties) {
     fun errorHandler(): CommonErrorHandler = DefaultErrorHandler(null, FixedBackOff(5000L, FixedBackOff.UNLIMITED_ATTEMPTS))
 
     @Bean
-    fun adminClient(): AdminClient = AdminClient.create(properties.buildAdminProperties())
+    fun adminClient(): AdminClient = AdminClient.create(properties.buildAdminProperties(null))
 }

@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: kafka-dlq-inspector
+  kafka:
+    bootstrap-servers: localhost:9092
+    properties:
+      schema.registry.url: http://localhost:8081
+    consumer:
+      group-id: kafka-dlq-inspector
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus"
+  metrics:
+    tags:
+      application: kafka-dlq-inspector
+kafka:
+  dlq:
+    topic-pattern: ".*\.dlq"
+    poll-size: 500
+    poll-timeout-ms: 1000
+    max-records: 1000
+notifications:
+  slack:
+    webhook-url: ""
+  webhook:
+    url: ""

@@ -1,7 +1,7 @@
 package com.dragos.kafkainspector.api
 
-import com.example.kafkainspector.model.ReplayRequest
-import com.example.kafkainspector.service.ReplayService
+import com.dragos.kafkainspector.model.ReplayRequest
+import com.dragos.kafkainspector.service.ReplayService
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping

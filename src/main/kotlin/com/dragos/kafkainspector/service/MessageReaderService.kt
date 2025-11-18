@@ -1,8 +1,8 @@
 package com.dragos.kafkainspector.service
 
-import com.example.kafkainspector.kafka.SchemaDecoder
-import com.example.kafkainspector.model.DlqMessage
-import com.example.kafkainspector.model.SearchFilters
+import com.dragos.kafkainspector.kafka.SchemaDecoder
+import com.dragos.kafkainspector.model.DlqMessage
+import com.dragos.kafkainspector.model.SearchFilters
 import io.micrometer.core.instrument.MeterRegistry
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer

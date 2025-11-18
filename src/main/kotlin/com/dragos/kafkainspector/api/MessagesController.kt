@@ -1,10 +1,10 @@
 package com.dragos.kafkainspector.api
 
-import com.example.kafkainspector.model.DlqMessage
-import com.example.kafkainspector.model.SearchFilters
-import com.example.kafkainspector.service.MessageReaderService
-import com.example.kafkainspector.service.SearchService
-import com.example.kafkainspector.util.PageResponse
+import com.dragos.kafkainspector.model.DlqMessage
+import com.dragos.kafkainspector.model.SearchFilters
+import com.dragos.kafkainspector.service.MessageReaderService
+import com.dragos.kafkainspector.service.SearchService
+import com.dragos.kafkainspector.util.PageResponse
 import org.apache.kafka.common.TopicPartition
 import org.springframework.web.bind.annotation.*
 

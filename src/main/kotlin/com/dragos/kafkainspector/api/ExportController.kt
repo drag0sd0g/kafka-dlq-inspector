@@ -1,8 +1,8 @@
 package com.dragos.kafkainspector.api
 
-import com.example.kafkainspector.model.SearchFilters
-import com.example.kafkainspector.service.ExportService
-import com.example.kafkainspector.service.SearchService
+import com.dragos.kafkainspector.model.SearchFilters
+import com.dragos.kafkainspector.service.ExportService
+import com.dragos.kafkainspector.service.SearchService
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity

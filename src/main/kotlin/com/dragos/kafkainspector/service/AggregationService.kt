@@ -1,10 +1,10 @@
 package com.dragos.kafkainspector.service
 
-import com.example.kafkainspector.kafka.DlqTopicDiscovery
-import com.example.kafkainspector.model.AggregationResult
-import com.example.kafkainspector.model.SearchFilters
-import com.example.kafkainspector.model.TimeWindowAggregation
-import com.example.kafkainspector.model.TopicAggregation
+import com.dragos.kafkainspector.kafka.DlqTopicDiscovery
+import com.dragos.kafkainspector.model.AggregationResult
+import com.dragos.kafkainspector.model.SearchFilters
+import com.dragos.kafkainspector.model.TimeWindowAggregation
+import com.dragos.kafkainspector.model.TopicAggregation
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.temporal.ChronoUnit

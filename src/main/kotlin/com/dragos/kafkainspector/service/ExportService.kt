@@ -1,6 +1,6 @@
 package com.dragos.kafkainspector.service
 
-import com.example.kafkainspector.model.DlqMessage
+import com.dragos.kafkainspector.model.DlqMessage
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.springframework.stereotype.Service

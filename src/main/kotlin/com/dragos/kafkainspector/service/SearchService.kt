@@ -1,8 +1,8 @@
 package com.dragos.kafkainspector.service
 
-import com.example.kafkainspector.kafka.DlqTopicDiscovery
-import com.example.kafkainspector.model.DlqMessage
-import com.example.kafkainspector.model.SearchFilters
+import com.dragos.kafkainspector.kafka.DlqTopicDiscovery
+import com.dragos.kafkainspector.model.DlqMessage
+import com.dragos.kafkainspector.model.SearchFilters
 import org.springframework.stereotype.Service
 
 @Service

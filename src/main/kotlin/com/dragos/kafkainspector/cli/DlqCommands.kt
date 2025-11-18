@@ -1,11 +1,11 @@
 package com.dragos.kafkainspector.cli
 
-import com.example.kafkainspector.model.ReplayRequest
-import com.example.kafkainspector.model.SearchFilters
-import com.example.kafkainspector.service.AggregationService
-import com.example.kafkainspector.service.ExportService
-import com.example.kafkainspector.service.ReplayService
-import com.example.kafkainspector.service.SearchService
+import com.dragos.kafkainspector.model.ReplayRequest
+import com.dragos.kafkainspector.model.SearchFilters
+import com.dragos.kafkainspector.service.AggregationService
+import com.dragos.kafkainspector.service.ExportService
+import com.dragos.kafkainspector.service.ReplayService
+import com.dragos.kafkainspector.service.SearchService
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value

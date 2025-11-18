@@ -1,6 +1,6 @@
 package com.dragos.kafkainspector.service
 
-import com.example.kafkainspector.model.ReplayRequest
+import com.dragos.kafkainspector.model.ReplayRequest
 import io.micrometer.core.instrument.MeterRegistry
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory

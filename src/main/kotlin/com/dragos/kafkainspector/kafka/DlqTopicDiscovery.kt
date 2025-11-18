@@ -1,6 +1,6 @@
 package com.dragos.kafkainspector.kafka
 
-import com.example.kafkainspector.model.DlqTopicInfo
+import com.dragos.kafkainspector.model.DlqTopicInfo
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.ListOffsetsOptions
 import org.apache.kafka.common.TopicPartition

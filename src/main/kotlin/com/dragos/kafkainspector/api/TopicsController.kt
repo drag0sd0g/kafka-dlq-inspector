@@ -1,7 +1,7 @@
 package com.dragos.kafkainspector.api
 
-import com.example.kafkainspector.kafka.DlqTopicDiscovery
-import com.example.kafkainspector.model.DlqTopicInfo
+import com.dragos.kafkainspector.kafka.DlqTopicDiscovery
+import com.dragos.kafkainspector.model.DlqTopicInfo
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController

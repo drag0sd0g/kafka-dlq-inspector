@@ -17,7 +17,7 @@ class DlqTopicDiscovery(
             .filter { it.matches(topicPattern.toRegex()) }
         if (topics.isEmpty()) return emptyList()
 
-        val descriptions = adminClient.describeTopics(topics).all().get()
+        val descriptions = adminClient.describeTopics(topics).allTopicNames().get()
         val offsets = fetchEndOffsets(descriptions.keys)
 
         return descriptions.map { (name, desc) ->
@@ -37,7 +37,7 @@ class DlqTopicDiscovery(
 
     private fun fetchEndOffsets(topicNames: Set<String>): Map<TopicPartition, Long> {
         val topicPartitions = topicNames.flatMap { topic ->
-            val partitions = adminClient.describeTopics(listOf(topic)).all().get()[topic]?.partitions() ?: emptyList()
+            val partitions = adminClient.describeTopics(listOf(topic)).allTopicNames().get()[topic]?.partitions() ?: emptyList()
             partitions.map { TopicPartition(topic, it.partition()) }
         }
         if (topicPartitions.isEmpty()) return emptyMap()

@@ -1,12 +1,12 @@
 package com.dragos.kafkainspector.kafka
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties
-import org.springframework.stereotype.Component
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig
 import io.confluent.kafka.serializers.KafkaAvroDeserializer
 import org.apache.avro.generic.GenericRecord
+import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties
+import org.springframework.stereotype.Component
 import java.util.Properties
 
 interface SchemaDecoder {
@@ -22,7 +22,7 @@ class CompositeSchemaDecoder(
     override fun decode(record: ConsumerRecord<ByteArray, ByteArray>): Any? {
         val payload = record.value()
         if (payload.isEmpty()) return null
-        
+
         // Try Avro decoding first, then fall back to JSON
         return decodeAvro(payload) ?: decodeJson(payload)
     }

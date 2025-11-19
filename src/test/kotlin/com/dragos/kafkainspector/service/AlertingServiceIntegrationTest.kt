@@ -75,10 +75,11 @@ class AlertingServiceIntegrationTest {
         producer.flush()
 
         // Test - Check messages are searchable for threshold evaluation
-        val messages = searchService.search(
-            SearchFilters(topics = listOf(topic)),
-            100,
-        )
+        val messages =
+            searchService.search(
+                SearchFilters(topics = listOf(topic)),
+                100,
+            )
 
         assertTrue(messages.size >= 10)
         assertNotNull(messages.first().topic)
@@ -105,14 +106,16 @@ class AlertingServiceIntegrationTest {
         producer.flush()
 
         // Test - Verify message counts for alerting logic
-        val highRateMsgs = searchService.search(
-            SearchFilters(topics = listOf("alerts-errors-1.dlq")),
-            100,
-        )
-        val lowRateMsgs = searchService.search(
-            SearchFilters(topics = listOf("alerts-errors-2.dlq")),
-            100,
-        )
+        val highRateMsgs =
+            searchService.search(
+                SearchFilters(topics = listOf("alerts-errors-1.dlq")),
+                100,
+            )
+        val lowRateMsgs =
+            searchService.search(
+                SearchFilters(topics = listOf("alerts-errors-2.dlq")),
+                100,
+            )
 
         assertTrue(highRateMsgs.size >= 20)
         assertTrue(lowRateMsgs.size >= 5)
@@ -145,10 +148,11 @@ class AlertingServiceIntegrationTest {
         producer.flush()
 
         // Test - Verify exception metadata for pattern detection
-        val messages = searchService.search(
-            SearchFilters(topics = listOf(topic)),
-            100,
-        )
+        val messages =
+            searchService.search(
+                SearchFilters(topics = listOf(topic)),
+                100,
+            )
 
         val criticalCount = messages.count { it.exceptionClass == criticalException }
         val regularCount = messages.count { it.exceptionClass == regularException }
@@ -170,27 +174,31 @@ class AlertingServiceIntegrationTest {
         for (i in 0..4) {
             val timestamp = now - (i * 60000) // Messages from 0 to 4 minutes ago
             val payload = """{"lag-test": $i}""".toByteArray()
-            val record = ProducerRecord(
-                topic,
-                0,
-                timestamp,
-                null,
-                payload,
-            )
+            val record =
+                ProducerRecord(
+                    topic,
+                    0,
+                    timestamp,
+                    null,
+                    payload,
+                )
             producer.send(record).get()
         }
         producer.flush()
 
         // Test - Verify timestamp data for lag monitoring
-        val messages = searchService.search(
-            SearchFilters(topics = listOf(topic)),
-            100,
-        )
+        val messages =
+            searchService.search(
+                SearchFilters(topics = listOf(topic)),
+                100,
+            )
 
         assertTrue(messages.isNotEmpty())
-        assertTrue(messages.any { msg ->
-            now - msg.timestamp > 180000 // Some messages older than 3 minutes
-        })
+        assertTrue(
+            messages.any { msg ->
+                now - msg.timestamp > 180000 // Some messages older than 3 minutes
+            },
+        )
     }
 
     @Test
@@ -205,44 +213,48 @@ class AlertingServiceIntegrationTest {
 
         // Produce messages across different time windows
         repeat(5) { i ->
-            val record = ProducerRecord(
-                topic,
-                0,
-                now - (i * 10000), // Recent messages
-                null,
-                "recent-$i".toByteArray(),
-            )
+            val record =
+                ProducerRecord(
+                    topic,
+                    0,
+                    now - (i * 10000), // Recent messages
+                    null,
+                    "recent-$i".toByteArray(),
+                )
             producer.send(record).get()
         }
 
         repeat(3) { i ->
-            val record = ProducerRecord(
-                topic,
-                0,
-                fiveMinutesAgo - (i * 10000), // 5 minutes ago
-                null,
-                "old-$i".toByteArray(),
-            )
+            val record =
+                ProducerRecord(
+                    topic,
+                    0,
+                    fiveMinutesAgo - (i * 10000), // 5 minutes ago
+                    null,
+                    "old-$i".toByteArray(),
+                )
             producer.send(record).get()
         }
         producer.flush()
 
         // Test - Time-based filtering for windowed alerts
-        val recentMessages = searchService.search(
-            SearchFilters(
-                topics = listOf(topic),
-                timeFrom = now - 120000, // Last 2 minutes
-            ),
-            100,
-        )
+        val recentMessages =
+            searchService.search(
+                SearchFilters(
+                    topics = listOf(topic),
+                    timeFrom = now - 120000, // Last 2 minutes
+                ),
+                100,
+            )
 
-        val olderMessages = searchService.search(
-            SearchFilters(
-                topics = listOf(topic),
-                timeTo = now - 240000, // Older than 4 minutes
-            ),
-            100,
-        )
+        val olderMessages =
+            searchService.search(
+                SearchFilters(
+                    topics = listOf(topic),
+                    timeTo = now - 240000, // Older than 4 minutes
+                ),
+                100,
+            )
 
         assertTrue(recentMessages.isNotEmpty())
         assertTrue(recentMessages.all { it.timestamp >= now - 120000 })
@@ -269,10 +281,11 @@ class AlertingServiceIntegrationTest {
 
         // Test - Verify metrics can be collected per topic and partition
         topics.forEach { topic ->
-            val messages = searchService.search(
-                SearchFilters(topics = listOf(topic)),
-                100,
-            )
+            val messages =
+                searchService.search(
+                    SearchFilters(topics = listOf(topic)),
+                    100,
+                )
             assertTrue(messages.isNotEmpty())
 
             val partition0 = messages.count { it.partition == 0 }
@@ -295,26 +308,28 @@ class AlertingServiceIntegrationTest {
         repeat(50) { i ->
             val timestamp = now + (i * 100) // All within 5 seconds
             val payload = """{"burst": $i}""".toByteArray()
-            val record = ProducerRecord(
-                topic,
-                0,
-                timestamp,
-                null,
-                payload,
-            )
+            val record =
+                ProducerRecord(
+                    topic,
+                    0,
+                    timestamp,
+                    null,
+                    payload,
+                )
             producer.send(record).get()
         }
         producer.flush()
 
         // Test - Verify burst can be detected through message volume
-        val messages = searchService.search(
-            SearchFilters(
-                topics = listOf(topic),
-                timeFrom = now,
-                timeTo = now + 10000,
-            ),
-            100,
-        )
+        val messages =
+            searchService.search(
+                SearchFilters(
+                    topics = listOf(topic),
+                    timeFrom = now,
+                    timeTo = now + 10000,
+                ),
+                100,
+            )
 
         assertTrue(messages.size >= 50)
 

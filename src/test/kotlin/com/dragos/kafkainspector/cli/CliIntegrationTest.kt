@@ -95,7 +95,11 @@ class CliIntegrationTest {
         }
 
         await().atMost(Duration.ofSeconds(10)).until {
-            adminClient.listTopics().names().get().containsAll(topics)
+            adminClient
+                .listTopics()
+                .names()
+                .get()
+                .containsAll(topics)
         }
 
         // Test - Discovery service works
@@ -117,7 +121,9 @@ class CliIntegrationTest {
         producer.flush()
 
         // Test - Search service works
-        val filters = com.dragos.kafkainspector.model.SearchFilters(topics = listOf(topic))
+        val filters =
+            com.dragos.kafkainspector.model
+                .SearchFilters(topics = listOf(topic))
         val messages = searchService.search(filters, 100)
 
         assertTrue(messages.isNotEmpty())
@@ -137,7 +143,9 @@ class CliIntegrationTest {
         producer.flush()
 
         // Test - Export service works
-        val filters = com.dragos.kafkainspector.model.SearchFilters(topics = listOf(topic))
+        val filters =
+            com.dragos.kafkainspector.model
+                .SearchFilters(topics = listOf(topic))
         val messages = searchService.search(filters, 100)
 
         val jsonFile = java.io.File.createTempFile("cli-export", ".json")
@@ -162,12 +170,14 @@ class CliIntegrationTest {
         // Setup
         val sourceTopic = "cli-replay-source.dlq"
         val destTopic = "cli-replay-dest"
-        adminClient.createTopics(
-            listOf(
-                NewTopic(sourceTopic, 1, 1.toShort()),
-                NewTopic(destTopic, 1, 1.toShort()),
-            ),
-        ).all().get()
+        adminClient
+            .createTopics(
+                listOf(
+                    NewTopic(sourceTopic, 1, 1.toShort()),
+                    NewTopic(destTopic, 1, 1.toShort()),
+                ),
+            ).all()
+            .get()
 
         repeat(3) { i ->
             val payload = """{"cli-replay": $i}""".toByteArray()
@@ -176,17 +186,21 @@ class CliIntegrationTest {
         producer.flush()
 
         // Test - Replay service works (dry run)
-        val replayRequest = com.dragos.kafkainspector.model.ReplayRequest(
-            cluster = "test",
-            sourceTopic = sourceTopic,
-            destinationTopic = destTopic,
-            filters = com.dragos.kafkainspector.model.SearchFilters(topics = listOf(sourceTopic)),
-            dryRun = true,
-        )
+        val replayRequest =
+            com.dragos.kafkainspector.model.ReplayRequest(
+                cluster = "test",
+                sourceTopic = sourceTopic,
+                destinationTopic = destTopic,
+                filters =
+                    com.dragos.kafkainspector.model
+                        .SearchFilters(topics = listOf(sourceTopic)),
+                dryRun = true,
+            )
 
-        val result = assertDoesNotThrow {
-            replayService.replay(replayRequest)
-        }
+        val result =
+            assertDoesNotThrow {
+                replayService.replay(replayRequest)
+            }
 
         assertNotNull(result)
         assertTrue(result.isNotEmpty())
@@ -210,18 +224,20 @@ class CliIntegrationTest {
         producer.flush()
 
         // Test - Filter by partition
-        val partitionFilter = com.dragos.kafkainspector.model.SearchFilters(
-            topics = listOf(topic),
-            partitions = listOf(0),
-        )
+        val partitionFilter =
+            com.dragos.kafkainspector.model.SearchFilters(
+                topics = listOf(topic),
+                partitions = listOf(0),
+            )
         val partition0Messages = searchService.search(partitionFilter, 100)
         assertTrue(partition0Messages.all { it.partition == 0 })
 
         // Test - Filter by payload regex
-        val regexFilter = com.dragos.kafkainspector.model.SearchFilters(
-            topics = listOf(topic),
-            payloadRegex = ".*partition.*0.*",
-        )
+        val regexFilter =
+            com.dragos.kafkainspector.model.SearchFilters(
+                topics = listOf(topic),
+                payloadRegex = ".*partition.*0.*",
+            )
         val regexMessages = searchService.search(regexFilter, 100)
         assertTrue(regexMessages.isNotEmpty())
     }
@@ -241,10 +257,12 @@ class CliIntegrationTest {
         producer.flush()
 
         // Test - Search should handle pagination
-        val allMessages = searchService.search(
-            com.dragos.kafkainspector.model.SearchFilters(topics = listOf(topic)),
-            150,
-        )
+        val allMessages =
+            searchService.search(
+                com.dragos.kafkainspector.model
+                    .SearchFilters(topics = listOf(topic)),
+                150,
+            )
         assertTrue(allMessages.size >= 100)
 
         // Test - Export should handle large volumes
@@ -265,11 +283,12 @@ class CliIntegrationTest {
         val topic = "cli-exceptions.dlq"
         adminClient.createTopics(listOf(NewTopic(topic, 1, 1.toShort()))).all().get()
 
-        val exceptions = listOf(
-            "java.lang.NullPointerException",
-            "java.lang.IllegalArgumentException",
-            "java.io.IOException",
-        )
+        val exceptions =
+            listOf(
+                "java.lang.NullPointerException",
+                "java.lang.IllegalArgumentException",
+                "java.io.IOException",
+            )
 
         exceptions.forEach { exceptionType ->
             val payload = """{"error": "test"}""".toByteArray()
@@ -282,10 +301,12 @@ class CliIntegrationTest {
         producer.flush()
 
         // Test - Messages should include exception metadata
-        val messages = searchService.search(
-            com.dragos.kafkainspector.model.SearchFilters(topics = listOf(topic)),
-            100,
-        )
+        val messages =
+            searchService.search(
+                com.dragos.kafkainspector.model
+                    .SearchFilters(topics = listOf(topic)),
+                100,
+            )
 
         assertTrue(messages.all { it.exceptionClass != null })
         assertTrue(messages.all { it.exceptionMessage != null })

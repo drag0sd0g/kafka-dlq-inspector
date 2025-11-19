@@ -10,8 +10,6 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.awaitility.Awaitility.await
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -84,11 +82,16 @@ class RestApiIntegrationTest {
         }
 
         await().atMost(Duration.ofSeconds(10)).until {
-            adminClient.listTopics().names().get().containsAll(topics)
+            adminClient
+                .listTopics()
+                .names()
+                .get()
+                .containsAll(topics)
         }
 
         // Test
-        mockMvc.perform(get("/api/topics"))
+        mockMvc
+            .perform(get("/api/topics"))
             .andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$").isArray)
@@ -109,12 +112,12 @@ class RestApiIntegrationTest {
         producer.flush()
 
         // Test - Page 0
-        mockMvc.perform(
-            get("/api/topics/$topic/messages")
-                .param("page", "0")
-                .param("size", "5"),
-        )
-            .andExpect(status().isOk)
+        mockMvc
+            .perform(
+                get("/api/topics/$topic/messages")
+                    .param("page", "0")
+                    .param("size", "5"),
+            ).andExpect(status().isOk)
             .andExpect(jsonPath("$.items").isArray)
             .andExpect(jsonPath("$.items.length()").value(5))
             .andExpect(jsonPath("$.total").value(10))
@@ -122,12 +125,12 @@ class RestApiIntegrationTest {
             .andExpect(jsonPath("$.size").value(5))
 
         // Test - Page 1
-        mockMvc.perform(
-            get("/api/topics/$topic/messages")
-                .param("page", "1")
-                .param("size", "5"),
-        )
-            .andExpect(status().isOk)
+        mockMvc
+            .perform(
+                get("/api/topics/$topic/messages")
+                    .param("page", "1")
+                    .param("size", "5"),
+            ).andExpect(status().isOk)
             .andExpect(jsonPath("$.items.length()").value(5))
             .andExpect(jsonPath("$.page").value(1))
     }
@@ -148,12 +151,12 @@ class RestApiIntegrationTest {
         producer.flush()
 
         // Test - Filter by partition 1
-        mockMvc.perform(
-            get("/api/topics/$topic/messages")
-                .param("partition", "1")
-                .param("size", "50"),
-        )
-            .andExpect(status().isOk)
+        mockMvc
+            .perform(
+                get("/api/topics/$topic/messages")
+                    .param("partition", "1")
+                    .param("size", "50"),
+            ).andExpect(status().isOk)
             .andExpect(jsonPath("$.items").isArray)
             .andExpect(jsonPath("$.items[*].partition").value(org.hamcrest.Matchers.everyItem(org.hamcrest.Matchers.equalTo(1))))
     }
@@ -172,7 +175,8 @@ class RestApiIntegrationTest {
         producer.flush()
 
         // Test - Get message at offset 2
-        mockMvc.perform(get("/api/topics/$topic/messages/0/2"))
+        mockMvc
+            .perform(get("/api/topics/$topic/messages/0/2"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.topic").value(topic))
             .andExpect(jsonPath("$.partition").value(0))
@@ -195,12 +199,12 @@ class RestApiIntegrationTest {
         val filtersJson = objectMapper.writeValueAsString(filters)
 
         // Test
-        mockMvc.perform(
-            post("/api/export/json")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(filtersJson),
-        )
-            .andExpect(status().isOk)
+        mockMvc
+            .perform(
+                post("/api/export/json")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(filtersJson),
+            ).andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$").isArray)
     }
@@ -221,14 +225,15 @@ class RestApiIntegrationTest {
         val filtersJson = objectMapper.writeValueAsString(filters)
 
         // Test
-        val result = mockMvc.perform(
-            post("/api/export/csv")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(filtersJson),
-        )
-            .andExpect(status().isOk)
-            .andExpect(content().contentType("text/csv"))
-            .andReturn()
+        val result =
+            mockMvc
+                .perform(
+                    post("/api/export/csv")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(filtersJson),
+                ).andExpect(status().isOk)
+                .andExpect(content().contentType("text/csv"))
+                .andReturn()
 
         val csvContent = result.response.contentAsString
         assertTrue(csvContent.contains("topic"))
@@ -240,12 +245,14 @@ class RestApiIntegrationTest {
         // Setup
         val sourceTopic = "api-replay-source.dlq"
         val destinationTopic = "api-replay-dest"
-        adminClient.createTopics(
-            listOf(
-                NewTopic(sourceTopic, 1, 1.toShort()),
-                NewTopic(destinationTopic, 1, 1.toShort()),
-            ),
-        ).all().get()
+        adminClient
+            .createTopics(
+                listOf(
+                    NewTopic(sourceTopic, 1, 1.toShort()),
+                    NewTopic(destinationTopic, 1, 1.toShort()),
+                ),
+            ).all()
+            .get()
 
         repeat(3) { i ->
             val payload = """{"replay-test": $i}""".toByteArray()
@@ -253,22 +260,23 @@ class RestApiIntegrationTest {
         }
         producer.flush()
 
-        val replayRequest = ReplayRequest(
-            cluster = "test",
-            sourceTopic = sourceTopic,
-            destinationTopic = destinationTopic,
-            filters = SearchFilters(topics = listOf(sourceTopic)),
-            dryRun = true,
-        )
+        val replayRequest =
+            ReplayRequest(
+                cluster = "test",
+                sourceTopic = sourceTopic,
+                destinationTopic = destinationTopic,
+                filters = SearchFilters(topics = listOf(sourceTopic)),
+                dryRun = true,
+            )
         val requestJson = objectMapper.writeValueAsString(replayRequest)
 
         // Test
-        mockMvc.perform(
-            post("/api/replay")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestJson),
-        )
-            .andExpect(status().isOk)
+        mockMvc
+            .perform(
+                post("/api/replay")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestJson),
+            ).andExpect(status().isOk)
             .andExpect(jsonPath("$").isArray)
     }
 
@@ -296,12 +304,12 @@ class RestApiIntegrationTest {
         val filtersJson = objectMapper.writeValueAsString(filters)
 
         // Test
-        mockMvc.perform(
-            post("/api/aggregations")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(filtersJson),
-        )
-            .andExpect(status().isOk)
+        mockMvc
+            .perform(
+                post("/api/aggregations")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(filtersJson),
+            ).andExpect(status().isOk)
             .andExpect(jsonPath("$.totalMessages").exists())
             .andExpect(jsonPath("$.byTopic").isMap)
             .andExpect(jsonPath("$.byPartition").isMap)
@@ -320,12 +328,14 @@ class RestApiIntegrationTest {
         producer.flush()
 
         // Test - Multiple concurrent requests
-        val results = (1..5).map {
-            Thread {
-                mockMvc.perform(get("/api/topics/$topic/messages"))
-                    .andExpect(status().isOk)
+        val results =
+            (1..5).map {
+                Thread {
+                    mockMvc
+                        .perform(get("/api/topics/$topic/messages"))
+                        .andExpect(status().isOk)
+                }
             }
-        }
 
         results.forEach { it.start() }
         results.forEach { it.join() }

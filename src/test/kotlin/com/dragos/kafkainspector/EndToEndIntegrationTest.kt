@@ -108,7 +108,11 @@ class EndToEndIntegrationTest {
 
         // Wait for topics to be fully initialized
         await().atMost(Duration.ofSeconds(10)).until {
-            adminClient.listTopics().names().get().containsAll(dlqTopics)
+            adminClient
+                .listTopics()
+                .names()
+                .get()
+                .containsAll(dlqTopics)
         }
 
         // Test 1: Topic Discovery
@@ -119,41 +123,48 @@ class EndToEndIntegrationTest {
         assertTrue(discoveredTopics.any { it.name == "notifications.dlq" })
 
         // Test 2: Message Reading
-        val allMessages = searchService.search(
-            SearchFilters(topics = listOf("orders.dlq", "payments.dlq", "notifications.dlq")),
-            1000,
-        )
+        val allMessages =
+            searchService.search(
+                SearchFilters(topics = listOf("orders.dlq", "payments.dlq", "notifications.dlq")),
+                1000,
+            )
         assertTrue(allMessages.size >= 15, "Should read at least 15 messages across all topics")
 
         // Test 3: Filtering by Topic
-        val ordersMessages = searchService.search(
-            SearchFilters(topics = listOf("orders.dlq")),
-            100,
-        )
+        val ordersMessages =
+            searchService.search(
+                SearchFilters(topics = listOf("orders.dlq")),
+                100,
+            )
         assertTrue(ordersMessages.all { it.topic == "orders.dlq" })
         assertTrue(ordersMessages.size >= 5)
 
         // Test 4: Filtering by Partition
-        val partition0Messages = searchService.search(
-            SearchFilters(topics = listOf("orders.dlq"), partitions = listOf(0)),
-            100,
-        )
+        val partition0Messages =
+            searchService.search(
+                SearchFilters(topics = listOf("orders.dlq"), partitions = listOf(0)),
+                100,
+            )
         assertTrue(partition0Messages.all { it.partition == 0 })
 
         // Test 5: Filtering by Payload Regex
-        val jsonMessages = searchService.search(
-            SearchFilters(topics = listOf("orders.dlq", "payments.dlq"), payloadRegex = ".*error.*"),
-            100,
-        )
+        val jsonMessages =
+            searchService.search(
+                SearchFilters(topics = listOf("orders.dlq", "payments.dlq"), payloadRegex = ".*error.*"),
+                100,
+            )
         assertTrue(jsonMessages.isNotEmpty())
-        assertTrue(jsonMessages.all { message ->
-            String(message.value).contains("error", ignoreCase = true)
-        })
+        assertTrue(
+            jsonMessages.all { message ->
+                String(message.value).contains("error", ignoreCase = true)
+            },
+        )
 
         // Test 6: Aggregations
-        val aggregations = aggregationService.aggregate(
-            SearchFilters(topics = listOf("orders.dlq", "payments.dlq", "notifications.dlq")),
-        )
+        val aggregations =
+            aggregationService.aggregate(
+                SearchFilters(topics = listOf("orders.dlq", "payments.dlq", "notifications.dlq")),
+            )
         assertNotNull(aggregations)
         assertTrue(aggregations.byTopic.isNotEmpty())
         assertTrue(aggregations.byPartition.isNotEmpty())
@@ -188,13 +199,14 @@ class EndToEndIntegrationTest {
         val destinationTopic = "orders-replay"
         adminClient.createTopics(listOf(NewTopic(destinationTopic, 1, 1.toShort()))).all().get()
 
-        val replayRequest = ReplayRequest(
-            cluster = "test",
-            sourceTopic = "orders.dlq",
-            destinationTopic = destinationTopic,
-            filters = SearchFilters(topics = listOf("orders.dlq")),
-            dryRun = true,
-        )
+        val replayRequest =
+            ReplayRequest(
+                cluster = "test",
+                sourceTopic = "orders.dlq",
+                destinationTopic = destinationTopic,
+                filters = SearchFilters(topics = listOf("orders.dlq")),
+                dryRun = true,
+            )
 
         val dryRunResult = replayService.replay(replayRequest)
         assertNotNull(dryRunResult)
@@ -230,12 +242,13 @@ class EndToEndIntegrationTest {
 
         // Produce message with JSON payload
         val jsonPayload = """{"orderId": "123", "error": "Payment failed"}""".toByteArray()
-        val record = ProducerRecord(
-            topic,
-            0,
-            null,
-            jsonPayload,
-        )
+        val record =
+            ProducerRecord(
+                topic,
+                0,
+                null,
+                jsonPayload,
+            )
         record.headers().add("__TypeId__", "com.example.Order".toByteArray())
         record.headers().add("__ExceptionClass__", "java.lang.RuntimeException".toByteArray())
         record.headers().add("__ExceptionMessage__", "Payment processing failed".toByteArray())
@@ -264,26 +277,28 @@ class EndToEndIntegrationTest {
 
         // Produce messages with specific timestamps
         for (i in 0..4) {
-            val record = ProducerRecord(
-                topic,
-                0,
-                now + (i * 1000), // Each message 1 second apart
-                null,
-                "message-$i".toByteArray(),
-            )
+            val record =
+                ProducerRecord(
+                    topic,
+                    0,
+                    now + (i * 1000), // Each message 1 second apart
+                    null,
+                    "message-$i".toByteArray(),
+                )
             producer.send(record).get()
         }
         producer.flush()
 
         // Filter by time range
-        val recentMessages = searchService.search(
-            SearchFilters(
-                topics = listOf(topic),
-                timeFrom = now + 2000, // Start from 2 seconds after
-                timeTo = now + 5000, // End at 5 seconds after
-            ),
-            100,
-        )
+        val recentMessages =
+            searchService.search(
+                SearchFilters(
+                    topics = listOf(topic),
+                    timeFrom = now + 2000, // Start from 2 seconds after
+                    timeTo = now + 5000, // End at 5 seconds after
+                ),
+                100,
+            )
 
         assertTrue(recentMessages.isNotEmpty())
         assertTrue(recentMessages.size <= 4) // Should get messages 2, 3, 4
@@ -297,12 +312,13 @@ class EndToEndIntegrationTest {
 
         // Produce messages with different headers
         for (i in 0..4) {
-            val record = ProducerRecord(
-                topic,
-                0,
-                null,
-                "message-$i".toByteArray(),
-            )
+            val record =
+                ProducerRecord(
+                    topic,
+                    0,
+                    null,
+                    "message-$i".toByteArray(),
+                )
             record.headers().add("userId", "user-$i".toByteArray())
             record.headers().add("region", if (i % 2 == 0) "US" else "EU".toByteArray())
             producer.send(record).get()
@@ -310,13 +326,14 @@ class EndToEndIntegrationTest {
         producer.flush()
 
         // Filter by header
-        val usMessages = searchService.search(
-            SearchFilters(
-                topics = listOf(topic),
-                headerMatch = mapOf("region" to "US"),
-            ),
-            100,
-        )
+        val usMessages =
+            searchService.search(
+                SearchFilters(
+                    topics = listOf(topic),
+                    headerMatch = mapOf("region" to "US"),
+                ),
+                100,
+            )
 
         assertTrue(usMessages.isNotEmpty())
         // Note: Actual header filtering implementation may vary
@@ -328,30 +345,33 @@ class EndToEndIntegrationTest {
         adminClient.createTopics(listOf(NewTopic(topic, 1, 1.toShort()))).all().get()
 
         // Produce messages with different exception types
-        val exceptionTypes = listOf(
-            "java.lang.NullPointerException",
-            "java.lang.IllegalArgumentException",
-            "java.lang.NullPointerException",
-            "java.lang.RuntimeException",
-            "java.lang.NullPointerException",
-        )
+        val exceptionTypes =
+            listOf(
+                "java.lang.NullPointerException",
+                "java.lang.IllegalArgumentException",
+                "java.lang.NullPointerException",
+                "java.lang.RuntimeException",
+                "java.lang.NullPointerException",
+            )
 
         exceptionTypes.forEach { exceptionType ->
-            val record = ProducerRecord(
-                topic,
-                0,
-                null,
-                "error-message".toByteArray(),
-            )
+            val record =
+                ProducerRecord(
+                    topic,
+                    0,
+                    null,
+                    "error-message".toByteArray(),
+                )
             record.headers().add("__ExceptionClass__", exceptionType.toByteArray())
             producer.send(record).get()
         }
         producer.flush()
 
         // Aggregate
-        val aggregations = aggregationService.aggregate(
-            SearchFilters(topics = listOf(topic)),
-        )
+        val aggregations =
+            aggregationService.aggregate(
+                SearchFilters(topics = listOf(topic)),
+            )
 
         assertNotNull(aggregations.byException)
         assertTrue(aggregations.byException!!.isNotEmpty())

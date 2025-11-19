@@ -10,6 +10,7 @@ class CompositeSchemaDecoderTest {
     private val kafkaProperties =
         KafkaProperties().apply {
             consumer.properties["schema.registry.url"] = "mock://test"
+            properties["schema.registry.url"] = "mock://test"
         }
     private val decoder = CompositeSchemaDecoder(kafkaProperties)
 

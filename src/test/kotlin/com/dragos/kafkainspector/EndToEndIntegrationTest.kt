@@ -166,9 +166,9 @@ class EndToEndIntegrationTest {
                 SearchFilters(topics = listOf("orders.dlq", "payments.dlq", "notifications.dlq")),
             )
         assertNotNull(aggregations)
-        assertTrue(aggregations.byTopic.isNotEmpty())
-        assertTrue(aggregations.byPartition.isNotEmpty())
-        assertEquals(3, aggregations.byTopic.size)
+        assertTrue(aggregations.topics.isNotEmpty())
+        assertTrue(aggregations.windows.isNotEmpty())
+        assertEquals(3, aggregations.topics.size)
 
         // Test 7: JSON Export
         val jsonFile = File.createTempFile("dlq-export", ".json")
@@ -242,13 +242,7 @@ class EndToEndIntegrationTest {
 
         // Produce message with JSON payload
         val jsonPayload = """{"orderId": "123", "error": "Payment failed"}""".toByteArray()
-        val record =
-            ProducerRecord(
-                topic,
-                0,
-                null,
-                jsonPayload,
-            )
+        val record = ProducerRecord(topic, 0, null, jsonPayload)
         record.headers().add("__TypeId__", "com.example.Order".toByteArray())
         record.headers().add("__ExceptionClass__", "java.lang.RuntimeException".toByteArray())
         record.headers().add("__ExceptionMessage__", "Payment processing failed".toByteArray())
@@ -373,10 +367,11 @@ class EndToEndIntegrationTest {
                 SearchFilters(topics = listOf(topic)),
             )
 
-        assertNotNull(aggregations.byException)
-        assertTrue(aggregations.byException!!.isNotEmpty())
-        // NullPointerException should appear 3 times
-        val npeCount = aggregations.byException!!["java.lang.NullPointerException"]
+        assertNotNull(aggregations.topics)
+        assertTrue(aggregations.topics.isNotEmpty())
+        // NullPointerException should appear 3 times in the first topic's exception counts
+        val topicAgg = aggregations.topics.first()
+        val npeCount = topicAgg.exceptionCounts["java.lang.NullPointerException"]
         assertEquals(3, npeCount)
     }
 

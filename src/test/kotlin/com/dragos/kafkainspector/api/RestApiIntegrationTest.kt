@@ -310,9 +310,8 @@ class RestApiIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(filtersJson),
             ).andExpect(status().isOk)
-            .andExpect(jsonPath("$.totalMessages").exists())
-            .andExpect(jsonPath("$.byTopic").isMap)
-            .andExpect(jsonPath("$.byPartition").isMap)
+            .andExpect(jsonPath("$.topics").isArray)
+            .andExpect(jsonPath("$.windows").isArray)
     }
 
     @Test

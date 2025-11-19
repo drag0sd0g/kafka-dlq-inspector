@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.io.File
 
 class ExportControllerTest {
     private val searchService: SearchService = mock()
@@ -37,7 +38,11 @@ class ExportControllerTest {
                 ),
             )
         whenever(searchService.search(any(), any())).thenReturn(messages)
-        whenever(exportService.exportJson(any(), any())).thenAnswer { it.arguments[1] }
+        whenever(exportService.exportJson(any(), any())).thenAnswer {
+            val file = it.arguments[1] as File
+            file.writeText("""[{"topic":"topic"}]""")
+            file
+        }
 
         val response = controller.exportJson(SearchFilters())
 
@@ -72,7 +77,11 @@ class ExportControllerTest {
                 ),
             )
         whenever(searchService.search(any(), any())).thenReturn(messages)
-        whenever(exportService.exportCsv(any(), any())).thenAnswer { it.arguments[1] }
+        whenever(exportService.exportCsv(any(), any())).thenAnswer {
+            val file = it.arguments[1] as File
+            file.writeText("topic,partition,offset\ntopic,0,0")
+            file
+        }
 
         val response = controller.exportCsv(SearchFilters())
 

@@ -72,7 +72,7 @@ class AggregationServiceTest {
                 ),
             )
         whenever(discovery.discover()).thenReturn(listOf(DlqTopicInfo("topicA", 2, 0, null), DlqTopicInfo("topicB", 1, 0, null)))
-        whenever(reader.readMessages(any(), any(), any())).thenReturn(messages)
+        whenever(reader.readMessages(any(), any(), any(), any())).thenReturn(messages)
 
         val result = service.aggregate(SearchFilters())
 

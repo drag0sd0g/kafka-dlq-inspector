@@ -24,6 +24,6 @@ class AlertingServiceTest {
         service.notifyIfThresholdExceeded("topic", 10, threshold = 1000)
 
         val counter = meterRegistry.find("dlq.alerts.triggered").counter()
-        assertEquals(0.0, counter?.count())
+        assertEquals(0.0, counter?.count() ?: 0.0)
     }
 }

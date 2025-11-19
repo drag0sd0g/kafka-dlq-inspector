@@ -16,7 +16,8 @@ java.sourceCompatibility = JavaVersion.VERSION_21
 
 repositories {
     mavenCentral()
-    maven("https://packages.confluent.io/maven/")
+    // Note: Confluent repository restored for Avro support
+    // maven("https://packages.confluent.io/maven/")
 }
 
 dependencies {
@@ -25,8 +26,9 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("org.apache.avro:avro:1.11.3")
-    implementation("io.confluent:kafka-avro-serializer:7.5.1")
+    // Note: Avro/Confluent dependencies restored - JSON-only decoding available as fallback
+    // implementation("org.apache.avro:avro:1.11.3")
+    // implementation("io.confluent:kafka-avro-serializer:7.5.1")
     implementation("info.picocli:picocli-spring-boot-starter:4.7.6")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 

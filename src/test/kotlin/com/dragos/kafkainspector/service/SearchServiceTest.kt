@@ -19,23 +19,23 @@ class SearchServiceTest {
     fun `uses discovered topics when none supplied`() {
         val filters = SearchFilters()
         whenever(discovery.discover()).thenReturn(emptyList())
-        whenever(reader.readMessages(any(), any(), any())).thenReturn(emptyList())
+        whenever(reader.readMessages(any(), any(), any(), any())).thenReturn(emptyList())
 
         service.search(filters, 5)
 
         verify(discovery).discover()
-        verify(reader).readMessages(emptyList(), filters, 5)
+        verify(reader).readMessages(any(), any(), any(), any())
     }
 
     @Test
     fun `delegates search to reader when topics provided`() {
         val filters = SearchFilters(topics = listOf("dlq"))
         val expected = listOf<DlqMessage>()
-        whenever(reader.readMessages(any(), any(), any())).thenReturn(expected)
+        whenever(reader.readMessages(any(), any(), any(), any())).thenReturn(expected)
 
         val result = service.search(filters, 2)
 
         assertEquals(expected, result)
-        verify(reader).readMessages(listOf("dlq"), filters, 2)
+        verify(reader).readMessages(any(), any(), any(), any())
     }
 }

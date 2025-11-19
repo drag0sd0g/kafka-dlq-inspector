@@ -7,6 +7,7 @@ plugins {
     kotlin("plugin.spring") version "1.9.23"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
+    jacoco
 }
 
 group = "com.example"
@@ -33,6 +34,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:kafka")
     testImplementation("org.awaitility:awaitility:4.2.1")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
 }
 
 tasks.withType<KotlinCompile> {
@@ -44,6 +46,26 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+
+tasks.check {
+    dependsOn(tasks.jacocoTestReport)
 }
 
 tasks.jar {

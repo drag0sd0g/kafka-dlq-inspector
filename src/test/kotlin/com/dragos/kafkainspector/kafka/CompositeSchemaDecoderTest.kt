@@ -15,7 +15,7 @@ class CompositeSchemaDecoderTest {
 
     @Test
     fun `returns json tree when payload is valid json`() {
-        val record = ConsumerRecord("topic", 0, 0, null, "{\"value\":123}".toByteArray())
+        val record = ConsumerRecord<ByteArray, ByteArray>("topic", 0, 0, null, "{\"value\":123}".toByteArray())
 
         val result = decoder.decode(record)
 
@@ -26,7 +26,7 @@ class CompositeSchemaDecoderTest {
 
     @Test
     fun `returns null for empty payload`() {
-        val record = ConsumerRecord("topic", 0, 0, null, ByteArray(0))
+        val record = ConsumerRecord<ByteArray, ByteArray>("topic", 0, 0, null, ByteArray(0))
 
         val result = decoder.decode(record)
 

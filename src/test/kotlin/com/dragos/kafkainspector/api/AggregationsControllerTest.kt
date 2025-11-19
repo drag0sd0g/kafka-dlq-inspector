@@ -22,7 +22,7 @@ class AggregationsControllerTest {
                 topics = listOf(TopicAggregation("t", 1, 1, emptyMap(), 0.0, 0.0)),
                 windows = listOf(TimeWindowAggregation("t", 0, 1, 1, 0.1)),
             )
-        whenever(aggregationService.aggregate(any())).thenReturn(aggregation)
+        whenever(aggregationService.aggregate(any(), any())).thenReturn(aggregation)
 
         val result = controller.aggregate(SearchFilters())
 

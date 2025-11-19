@@ -40,7 +40,7 @@ class ReplayServiceTest {
                 originalTopic = null,
                 sizeBytes = 7L,
             )
-        whenever(reader.readMessages(any(), any(), any())).thenReturn(listOf(message))
+        whenever(reader.readMessages(any(), any(), any(), any())).thenReturn(listOf(message))
 
         val request =
             ReplayRequest(
@@ -75,7 +75,7 @@ class ReplayServiceTest {
                 originalTopic = null,
                 sizeBytes = 7L,
             )
-        whenever(reader.readMessages(any(), any(), any())).thenReturn(listOf(message))
+        whenever(reader.readMessages(any(), any(), any(), any())).thenReturn(listOf(message))
         val future = CompletableFuture.completedFuture<SendResult<ByteArray, ByteArray>>(null)
         whenever(kafkaTemplate.send(any<org.apache.kafka.clients.producer.ProducerRecord<ByteArray, ByteArray>>())).thenReturn(future)
 

@@ -175,7 +175,7 @@ class AlertingServiceIntegrationTest {
             val timestamp = now - (i * 60000) // Messages from 0 to 4 minutes ago
             val payload = """{"lag-test": $i}""".toByteArray()
             val record =
-                ProducerRecord(
+                ProducerRecord<ByteArray, ByteArray>(
                     topic,
                     0,
                     timestamp,
@@ -214,7 +214,7 @@ class AlertingServiceIntegrationTest {
         // Produce messages across different time windows
         repeat(5) { i ->
             val record =
-                ProducerRecord(
+                ProducerRecord<ByteArray, ByteArray>(
                     topic,
                     0,
                     now - (i * 10000), // Recent messages
@@ -226,7 +226,7 @@ class AlertingServiceIntegrationTest {
 
         repeat(3) { i ->
             val record =
-                ProducerRecord(
+                ProducerRecord<ByteArray, ByteArray>(
                     topic,
                     0,
                     fiveMinutesAgo - (i * 10000), // 5 minutes ago
@@ -309,7 +309,7 @@ class AlertingServiceIntegrationTest {
             val timestamp = now + (i * 100) // All within 5 seconds
             val payload = """{"burst": $i}""".toByteArray()
             val record =
-                ProducerRecord(
+                ProducerRecord<ByteArray, ByteArray>(
                     topic,
                     0,
                     timestamp,

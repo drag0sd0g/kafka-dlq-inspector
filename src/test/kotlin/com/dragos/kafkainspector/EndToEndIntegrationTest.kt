@@ -242,7 +242,7 @@ class EndToEndIntegrationTest {
 
         // Produce message with JSON payload
         val jsonPayload = """{"orderId": "123", "error": "Payment failed"}""".toByteArray()
-        val record = ProducerRecord(topic, 0, null, jsonPayload)
+        val record = ProducerRecord<ByteArray, ByteArray>(topic, 0, null, jsonPayload)
         record.headers().add("__TypeId__", "com.example.Order".toByteArray())
         record.headers().add("__ExceptionClass__", "java.lang.RuntimeException".toByteArray())
         record.headers().add("__ExceptionMessage__", "Payment processing failed".toByteArray())
@@ -272,7 +272,7 @@ class EndToEndIntegrationTest {
         // Produce messages with specific timestamps
         for (i in 0..4) {
             val record =
-                ProducerRecord(
+                ProducerRecord<ByteArray, ByteArray>(
                     topic,
                     0,
                     now + (i * 1000), // Each message 1 second apart
@@ -307,7 +307,7 @@ class EndToEndIntegrationTest {
         // Produce messages with different headers
         for (i in 0..4) {
             val record =
-                ProducerRecord(
+                ProducerRecord<ByteArray, ByteArray>(
                     topic,
                     0,
                     null,
@@ -350,7 +350,7 @@ class EndToEndIntegrationTest {
 
         exceptionTypes.forEach { exceptionType ->
             val record =
-                ProducerRecord(
+                ProducerRecord<ByteArray, ByteArray>(
                     topic,
                     0,
                     null,

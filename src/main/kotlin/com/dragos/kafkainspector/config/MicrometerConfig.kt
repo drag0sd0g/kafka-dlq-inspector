@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class MicrometerConfig(
     private val registry: MeterRegistry,
-    @Value("\${spring.application.name}") private val appName: String
+    @Value("\${spring.application.name}") private val appName: String,
 ) {
     init {
         registry.config().commonTags("application", appName)

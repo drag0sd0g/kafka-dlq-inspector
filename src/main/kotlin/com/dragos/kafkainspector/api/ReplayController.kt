@@ -9,8 +9,11 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/replay")
-class ReplayController(private val replayService: ReplayService) {
-
+class ReplayController(
+    private val replayService: ReplayService,
+) {
     @PostMapping
-    fun replay(@RequestBody request: ReplayRequest): List<String> = replayService.replay(request)
+    fun replay(
+        @RequestBody request: ReplayRequest,
+    ): List<String> = replayService.replay(request)
 }

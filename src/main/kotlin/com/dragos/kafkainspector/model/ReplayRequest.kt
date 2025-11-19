@@ -9,5 +9,5 @@ data class ReplayRequest(
     val filters: SearchFilters? = null,
     val dryRun: Boolean = true,
     val ratePerSecond: Int? = null,
-    val transactional: Boolean = false
+    val transactional: Boolean = false,
 )

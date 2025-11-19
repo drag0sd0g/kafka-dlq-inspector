@@ -8,9 +8,12 @@ import org.springframework.stereotype.Service
 @Service
 class SearchService(
     private val topicDiscovery: DlqTopicDiscovery,
-    private val messageReaderService: MessageReaderService
+    private val messageReaderService: MessageReaderService,
 ) {
-    fun search(filters: SearchFilters, limit: Int = 200): List<DlqMessage> {
+    fun search(
+        filters: SearchFilters,
+        limit: Int = 200,
+    ): List<DlqMessage> {
         val topics = if (filters.topics.isNotEmpty()) filters.topics else topicDiscovery.discover().map { it.name }
         return messageReaderService.readMessages(topics, filters, limit)
     }

@@ -23,8 +23,8 @@ import java.util.concurrent.Callable
         ShowCommand::class,
         AggregateCommand::class,
         ReplayCommand::class,
-        ExportCommand::class
-    ]
+        ExportCommand::class,
+    ],
 )
 class DlqCommand : Runnable {
     override fun run() {
@@ -34,7 +34,9 @@ class DlqCommand : Runnable {
 
 @Component
 @CommandLine.Command(name = "list-topics", description = ["List DLQ topics"])
-class ListTopicsCommand(private val aggregationService: AggregationService) : Callable<Int> {
+class ListTopicsCommand(
+    private val aggregationService: AggregationService,
+) : Callable<Int> {
     override fun call(): Int {
         val topics = aggregationService.aggregate(SearchFilters(), 0).topics
         topics.forEach { println("${it.topic} partitions=${it.partitionCount} count=${it.messageCount}") }
@@ -44,7 +46,9 @@ class ListTopicsCommand(private val aggregationService: AggregationService) : Ca
 
 @Component
 @CommandLine.Command(name = "show", description = ["Show messages"])
-class ShowCommand(private val searchService: SearchService) : Callable<Int> {
+class ShowCommand(
+    private val searchService: SearchService,
+) : Callable<Int> {
     @CommandLine.Option(names = ["--topic"], required = true)
     lateinit var topic: String
 
@@ -60,7 +64,9 @@ class ShowCommand(private val searchService: SearchService) : Callable<Int> {
 
 @Component
 @CommandLine.Command(name = "aggregate", description = ["Aggregate DLQ messages"])
-class AggregateCommand(private val aggregationService: AggregationService) : Callable<Int> {
+class AggregateCommand(
+    private val aggregationService: AggregationService,
+) : Callable<Int> {
     override fun call(): Int {
         val result = aggregationService.aggregate(SearchFilters())
         result.topics.forEach { println("${it.topic} count=${it.messageCount} exceptions=${it.exceptionCounts}") }
@@ -70,7 +76,9 @@ class AggregateCommand(private val aggregationService: AggregationService) : Cal
 
 @Component
 @CommandLine.Command(name = "replay", description = ["Replay DLQ messages"])
-class ReplayCommand(private val replayService: ReplayService) : Callable<Int> {
+class ReplayCommand(
+    private val replayService: ReplayService,
+) : Callable<Int> {
     @CommandLine.Option(names = ["--source"], required = true)
     lateinit var source: String
 
@@ -90,7 +98,10 @@ class ReplayCommand(private val replayService: ReplayService) : Callable<Int> {
 
 @Component
 @CommandLine.Command(name = "export", description = ["Export DLQ messages to JSON"])
-class ExportCommand(private val searchService: SearchService, private val exportService: ExportService) : Callable<Int> {
+class ExportCommand(
+    private val searchService: SearchService,
+    private val exportService: ExportService,
+) : Callable<Int> {
     @CommandLine.Option(names = ["--topic"], required = true)
     lateinit var topic: String
 
@@ -110,7 +121,7 @@ class ExportCommand(private val searchService: SearchService, private val export
 class CliRunner(
     private val dlqCommand: DlqCommand,
     @Value("\${cli.enabled:false}") private val enabled: Boolean,
-    private val applicationArguments: org.springframework.boot.ApplicationArguments
+    private val applicationArguments: org.springframework.boot.ApplicationArguments,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 

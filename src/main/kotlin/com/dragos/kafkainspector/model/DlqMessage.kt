@@ -14,5 +14,5 @@ data class DlqMessage(
     val exceptionMessage: String?,
     val stackTrace: String?,
     val originalTopic: String?,
-    val sizeBytes: Long
+    val sizeBytes: Long,
 )

@@ -19,21 +19,22 @@ class MessageReaderService(
     private val decoder: SchemaDecoder,
     private val meterRegistry: MeterRegistry,
     @Value("\${kafka.dlq.poll-size:500}") private val pollSize: Int,
-    @Value("\${kafka.dlq.poll-timeout-ms:1000}") private val pollTimeoutMs: Long
+    @Value("\${kafka.dlq.poll-timeout-ms:1000}") private val pollTimeoutMs: Long,
 ) {
     fun readMessages(
         topics: List<String>,
         filters: SearchFilters,
         limit: Int,
-        seekOffsets: Map<TopicPartition, Long> = emptyMap()
+        seekOffsets: Map<TopicPartition, Long> = emptyMap(),
     ): List<DlqMessage> {
         if (topics.isEmpty()) return emptyList()
         val props = consumerFactory.configurationProperties.toMutableMap()
         props[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = pollSize
         KafkaConsumer<ByteArray, ByteArray>(props).use { consumer ->
-            val partitions = topics.flatMap { topic ->
-                consumer.partitionsFor(topic).map { TopicPartition(topic, it.partition()) }
-            }
+            val partitions =
+                topics.flatMap { topic ->
+                    consumer.partitionsFor(topic).map { TopicPartition(topic, it.partition()) }
+                }
             consumer.assign(partitions)
             seekOffsets.forEach { (tp, offset) -> consumer.seek(tp, offset) }
             val messages = mutableListOf<DlqMessage>()
@@ -58,8 +59,8 @@ class MessageReaderService(
                                 exceptionMessage = record.headers().lastHeader("exception-message")?.let { String(it.value()) },
                                 stackTrace = record.headers().lastHeader("exception-stacktrace")?.let { String(it.value()) },
                                 originalTopic = record.headers().lastHeader("original-topic")?.let { String(it.value()) },
-                                sizeBytes = (record.serializedKeySize() + record.serializedValueSize()).toLong()
-                            )
+                                sizeBytes = (record.serializedKeySize() + record.serializedValueSize()).toLong(),
+                            ),
                         )
                         meterRegistry.counter("dlq.messages.read", "topic", record.topic()).increment()
                     }
@@ -69,7 +70,10 @@ class MessageReaderService(
         }
     }
 
-    private fun matchesFilters(record: org.apache.kafka.clients.consumer.ConsumerRecord<ByteArray, ByteArray>, filters: SearchFilters): Boolean {
+    private fun matchesFilters(
+        record: org.apache.kafka.clients.consumer.ConsumerRecord<ByteArray, ByteArray>,
+        filters: SearchFilters,
+    ): Boolean {
         val timestamp = record.timestamp()
         if (filters.timeFrom != null && timestamp < filters.timeFrom) return false
         if (filters.timeTo != null && timestamp > filters.timeTo) return false

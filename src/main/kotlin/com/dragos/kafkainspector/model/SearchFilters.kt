@@ -17,5 +17,5 @@ data class SearchFilters(
     val exceptionTypes: List<String>? = null,
     val partitions: List<Int>? = null,
     val offsetFrom: Long? = null,
-    val offsetTo: Long? = null
+    val offsetTo: Long? = null,
 )

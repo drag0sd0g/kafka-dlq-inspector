@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 class ReplayService(
     private val messageReaderService: MessageReaderService,
     private val kafkaTemplate: KafkaTemplate<ByteArray, ByteArray>,
-    private val meterRegistry: MeterRegistry
+    private val meterRegistry: MeterRegistry,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 

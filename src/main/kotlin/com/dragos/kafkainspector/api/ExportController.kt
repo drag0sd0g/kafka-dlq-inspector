@@ -16,24 +16,30 @@ import java.io.File
 @RequestMapping("/api/export")
 class ExportController(
     private val searchService: SearchService,
-    private val exportService: ExportService
+    private val exportService: ExportService,
 ) {
     @PostMapping("/json", produces = [MediaType.APPLICATION_JSON_VALUE])
-    fun exportJson(@RequestBody filters: SearchFilters): ResponseEntity<ByteArray> {
+    fun exportJson(
+        @RequestBody filters: SearchFilters,
+    ): ResponseEntity<ByteArray> {
         val messages = searchService.search(filters, 1_000)
         val file = File.createTempFile("dlq", "json")
         exportService.exportJson(messages, file)
-        return ResponseEntity.ok()
+        return ResponseEntity
+            .ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=dlq.json")
             .body(file.readBytes())
     }
 
     @PostMapping("/csv", produces = ["text/csv"])
-    fun exportCsv(@RequestBody filters: SearchFilters): ResponseEntity<ByteArray> {
+    fun exportCsv(
+        @RequestBody filters: SearchFilters,
+    ): ResponseEntity<ByteArray> {
         val messages = searchService.search(filters, 1_000)
         val file = File.createTempFile("dlq", "csv")
         exportService.exportCsv(messages, file)
-        return ResponseEntity.ok()
+        return ResponseEntity
+            .ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=dlq.csv")
             .body(file.readBytes())
     }

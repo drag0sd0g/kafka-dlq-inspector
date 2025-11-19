@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/aggregations")
-class AggregationsController(private val aggregationService: AggregationService) {
-
+class AggregationsController(
+    private val aggregationService: AggregationService,
+) {
     @PostMapping
-    fun aggregate(@RequestBody filters: SearchFilters): AggregationResult =
-        aggregationService.aggregate(filters)
+    fun aggregate(
+        @RequestBody filters: SearchFilters,
+    ): AggregationResult = aggregationService.aggregate(filters)
 }

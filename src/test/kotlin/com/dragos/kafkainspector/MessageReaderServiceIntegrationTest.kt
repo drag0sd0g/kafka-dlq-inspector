@@ -9,9 +9,8 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.DynamicPropertyRegistry
@@ -20,12 +19,11 @@ import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
-import java.util.*
+import java.util.Properties
 
 @SpringBootTest
 @Testcontainers
 class MessageReaderServiceIntegrationTest {
-
     companion object {
         @Container
         @JvmStatic
@@ -61,5 +59,6 @@ class MessageReaderServiceIntegrationTest {
 
         val messages = readerService.readMessages(listOf("test-dlq"), SearchFilters(topics = listOf("test-dlq")), 10)
         assertFalse(messages.isEmpty())
+        assertTrue(messages.any { String(it.value) == "value" })
     }
 }

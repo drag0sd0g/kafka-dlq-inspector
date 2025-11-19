@@ -7,14 +7,16 @@ import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties
 import org.springframework.stereotype.Component
-import java.util.*
+import java.util.Properties
 
 interface SchemaDecoder {
     fun decode(record: ConsumerRecord<ByteArray, ByteArray>): Any?
 }
 
 @Component
-class CompositeSchemaDecoder(private val kafkaProperties: KafkaProperties) : SchemaDecoder {
+class CompositeSchemaDecoder(
+    private val kafkaProperties: KafkaProperties,
+) : SchemaDecoder {
     private val objectMapper = ObjectMapper()
 
     override fun decode(record: ConsumerRecord<ByteArray, ByteArray>): Any? {
@@ -24,22 +26,24 @@ class CompositeSchemaDecoder(private val kafkaProperties: KafkaProperties) : Sch
         return decodeJson(payload) ?: decodeAvro(payload)
     }
 
-    private fun decodeJson(bytes: ByteArray): Any? = try {
-        objectMapper.readTree(bytes)
-    } catch (_: Exception) {
-        null
-    }
+    private fun decodeJson(bytes: ByteArray): Any? =
+        try {
+            objectMapper.readTree(bytes)
+        } catch (_: Exception) {
+            null
+        }
 
-    private fun decodeAvro(bytes: ByteArray): Any? = try {
-        val props = Properties()
-        props.putAll(kafkaProperties.consumer.properties.toMutableMap())
-        props[AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG] =
-            kafkaProperties.properties[AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG]
-        val mapProps = props.entries.associate { it.key.toString() to it.value }
-        val deserializer = KafkaAvroDeserializer().apply { configure(mapProps, false) }
-        val result = deserializer.deserialize(null, bytes)
-        if (result is GenericRecord) result else result?.toString()
-    } catch (_: Exception) {
-        null
-    }
+    private fun decodeAvro(bytes: ByteArray): Any? =
+        try {
+            val props = Properties()
+            props.putAll(kafkaProperties.consumer.properties.toMutableMap())
+            props[AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG] =
+                kafkaProperties.properties[AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG]
+            val mapProps = props.entries.associate { it.key.toString() to it.value }
+            val deserializer = KafkaAvroDeserializer().apply { configure(mapProps, false) }
+            val result = deserializer.deserialize(null, bytes)
+            if (result is GenericRecord) result else result?.toString()
+        } catch (_: Exception) {
+            null
+        }
 }

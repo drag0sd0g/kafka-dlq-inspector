@@ -8,8 +8,9 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/topics")
-class TopicsController(private val discovery: DlqTopicDiscovery) {
-
+class TopicsController(
+    private val discovery: DlqTopicDiscovery,
+) {
     @GetMapping
     fun listTopics(): List<DlqTopicInfo> = discovery.discover()
 }

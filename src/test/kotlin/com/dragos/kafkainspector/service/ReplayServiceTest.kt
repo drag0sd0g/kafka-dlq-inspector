@@ -23,31 +23,33 @@ class ReplayServiceTest {
 
     @Test
     fun `performs dry run without producing messages`() {
-        val message = DlqMessage(
-            topic = "src",
-            partition = 0,
-            offset = 1,
-            key = null,
-            value = "payload".toByteArray(),
-            decodedValue = null,
-            headers = emptyMap(),
-            timestamp = 0,
-            ingestionTimestamp = null,
-            exceptionClass = null,
-            exceptionMessage = null,
-            stackTrace = null,
-            originalTopic = null,
-            sizeBytes = 7L,
-        )
+        val message =
+            DlqMessage(
+                topic = "src",
+                partition = 0,
+                offset = 1,
+                key = null,
+                value = "payload".toByteArray(),
+                decodedValue = null,
+                headers = emptyMap(),
+                timestamp = 0,
+                ingestionTimestamp = null,
+                exceptionClass = null,
+                exceptionMessage = null,
+                stackTrace = null,
+                originalTopic = null,
+                sizeBytes = 7L,
+            )
         whenever(reader.readMessages(any(), any(), any())).thenReturn(listOf(message))
 
-        val request = ReplayRequest(
-            cluster = "local",
-            sourceTopic = "src",
-            destinationTopic = "dest",
-            dryRun = true,
-            filters = SearchFilters(),
-        )
+        val request =
+            ReplayRequest(
+                cluster = "local",
+                sourceTopic = "src",
+                destinationTopic = "dest",
+                dryRun = true,
+                filters = SearchFilters(),
+            )
 
         val result = service.replay(request)
 
@@ -56,33 +58,35 @@ class ReplayServiceTest {
 
     @Test
     fun `sends messages to destination topic`() {
-        val message = DlqMessage(
-            topic = "src",
-            partition = 0,
-            offset = 1,
-            key = null,
-            value = "payload".toByteArray(),
-            decodedValue = null,
-            headers = emptyMap(),
-            timestamp = 0,
-            ingestionTimestamp = null,
-            exceptionClass = null,
-            exceptionMessage = null,
-            stackTrace = null,
-            originalTopic = null,
-            sizeBytes = 7L,
-        )
+        val message =
+            DlqMessage(
+                topic = "src",
+                partition = 0,
+                offset = 1,
+                key = null,
+                value = "payload".toByteArray(),
+                decodedValue = null,
+                headers = emptyMap(),
+                timestamp = 0,
+                ingestionTimestamp = null,
+                exceptionClass = null,
+                exceptionMessage = null,
+                stackTrace = null,
+                originalTopic = null,
+                sizeBytes = 7L,
+            )
         whenever(reader.readMessages(any(), any(), any())).thenReturn(listOf(message))
         val future = CompletableFuture.completedFuture<SendResult<ByteArray, ByteArray>>(null)
         whenever(kafkaTemplate.send(any<org.apache.kafka.clients.producer.ProducerRecord<ByteArray, ByteArray>>())).thenReturn(future)
 
-        val request = ReplayRequest(
-            cluster = "local",
-            sourceTopic = "src",
-            destinationTopic = "dest",
-            dryRun = false,
-            filters = SearchFilters(),
-        )
+        val request =
+            ReplayRequest(
+                cluster = "local",
+                sourceTopic = "src",
+                destinationTopic = "dest",
+                dryRun = false,
+                filters = SearchFilters(),
+            )
 
         val result = service.replay(request)
 

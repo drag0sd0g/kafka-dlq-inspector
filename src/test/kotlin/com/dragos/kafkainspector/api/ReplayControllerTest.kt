@@ -15,7 +15,7 @@ class ReplayControllerTest {
     @Test
     fun `delegates replay to service`() {
         whenever(replayService.replay(any())).thenReturn(listOf("ok"))
-        val request = ReplayRequest(sourceTopic = "source", destinationTopic = "dest")
+        val request = ReplayRequest(cluster = "local", sourceTopic = "source", destinationTopic = "dest")
 
         val result = controller.replay(request)
 

@@ -13,7 +13,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.support.SendResult
-import org.springframework.util.concurrent.SettableListenableFuture
+import java.util.concurrent.CompletableFuture
 
 class ReplayServiceTest {
     private val reader: MessageReaderService = mock()
@@ -23,10 +23,31 @@ class ReplayServiceTest {
 
     @Test
     fun `performs dry run without producing messages`() {
-        val message = DlqMessage("src", 0, 1, null, "payload".toByteArray(), null, emptyMap(), 0, null, null, null, null, null, 10)
+        val message = DlqMessage(
+            topic = "src",
+            partition = 0,
+            offset = 1,
+            key = null,
+            value = "payload".toByteArray(),
+            headers = null,
+            additionalProperties = emptyMap(),
+            timestamp = 0,
+            exceptionMessage = null,
+            exceptionClass = null,
+            stackTrace = null,
+            rawValue = null,
+            decodedValue = null,
+            timestampType = 10,
+        )
         whenever(reader.readMessages(any(), any(), any())).thenReturn(listOf(message))
 
-        val request = ReplayRequest(sourceTopic = "src", destinationTopic = "dest", dryRun = true, filters = SearchFilters())
+        val request = ReplayRequest(
+            cluster = "local",
+            sourceTopic = "src",
+            destinationTopic = "dest",
+            dryRun = true,
+            filters = SearchFilters(),
+        )
 
         val result = service.replay(request)
 
@@ -35,13 +56,33 @@ class ReplayServiceTest {
 
     @Test
     fun `sends messages to destination topic`() {
-        val message = DlqMessage("src", 0, 1, null, "payload".toByteArray(), null, emptyMap(), 0, null, null, null, null, null, 10)
+        val message = DlqMessage(
+            topic = "src",
+            partition = 0,
+            offset = 1,
+            key = null,
+            value = "payload".toByteArray(),
+            headers = null,
+            additionalProperties = emptyMap(),
+            timestamp = 0,
+            exceptionMessage = null,
+            exceptionClass = null,
+            stackTrace = null,
+            rawValue = null,
+            decodedValue = null,
+            timestampType = 10,
+        )
         whenever(reader.readMessages(any(), any(), any())).thenReturn(listOf(message))
-        val future = SettableListenableFuture<SendResult<ByteArray, ByteArray>>()
-        future.set(null)
+        val future = CompletableFuture.completedFuture<SendResult<ByteArray, ByteArray>>(null)
         whenever(kafkaTemplate.send(any<org.apache.kafka.clients.producer.ProducerRecord<ByteArray, ByteArray>>())).thenReturn(future)
 
-        val request = ReplayRequest(sourceTopic = "src", destinationTopic = "dest", dryRun = false, filters = SearchFilters())
+        val request = ReplayRequest(
+            cluster = "local",
+            sourceTopic = "src",
+            destinationTopic = "dest",
+            dryRun = false,
+            filters = SearchFilters(),
+        )
 
         val result = service.replay(request)
 

@@ -29,15 +29,15 @@ class ReplayServiceTest {
             offset = 1,
             key = null,
             value = "payload".toByteArray(),
-            headers = null,
-            additionalProperties = emptyMap(),
-            timestamp = 0,
-            exceptionMessage = null,
-            exceptionClass = null,
-            stackTrace = null,
-            rawValue = null,
             decodedValue = null,
-            timestampType = 10,
+            headers = emptyMap(),
+            timestamp = 0,
+            ingestionTimestamp = null,
+            exceptionClass = null,
+            exceptionMessage = null,
+            stackTrace = null,
+            originalTopic = null,
+            sizeBytes = 7L,
         )
         whenever(reader.readMessages(any(), any(), any())).thenReturn(listOf(message))
 
@@ -62,15 +62,15 @@ class ReplayServiceTest {
             offset = 1,
             key = null,
             value = "payload".toByteArray(),
-            headers = null,
-            additionalProperties = emptyMap(),
-            timestamp = 0,
-            exceptionMessage = null,
-            exceptionClass = null,
-            stackTrace = null,
-            rawValue = null,
             decodedValue = null,
-            timestampType = 10,
+            headers = emptyMap(),
+            timestamp = 0,
+            ingestionTimestamp = null,
+            exceptionClass = null,
+            exceptionMessage = null,
+            stackTrace = null,
+            originalTopic = null,
+            sizeBytes = 7L,
         )
         whenever(reader.readMessages(any(), any(), any())).thenReturn(listOf(message))
         val future = CompletableFuture.completedFuture<SendResult<ByteArray, ByteArray>>(null)
@@ -88,6 +88,6 @@ class ReplayServiceTest {
 
         assertEquals(listOf("Replayed:src:0:1"), result)
         assertTrue(meterRegistry.find("dlq.replay.attempts").counter()!!.count() > 0)
-        verify(kafkaTemplate).send(any())
+        verify(kafkaTemplate).send(any<org.apache.kafka.clients.producer.ProducerRecord<ByteArray, ByteArray>>())
     }
 }

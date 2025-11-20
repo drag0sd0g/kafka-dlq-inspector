@@ -55,10 +55,10 @@ class MessageReaderService(
                                 headers = record.headers().associate { it.key() to String(it.value()) },
                                 timestamp = record.timestamp(),
                                 ingestionTimestamp = record.timestamp(),
-                                exceptionClass = record.headers().lastHeader("exception-class")?.let { String(it.value()) },
-                                exceptionMessage = record.headers().lastHeader("exception-message")?.let { String(it.value()) },
-                                stackTrace = record.headers().lastHeader("exception-stacktrace")?.let { String(it.value()) },
-                                originalTopic = record.headers().lastHeader("original-topic")?.let { String(it.value()) },
+                                exceptionClass = record.headers().lastHeader("__ExceptionClass__")?.let { String(it.value()) },
+                                exceptionMessage = record.headers().lastHeader("__ExceptionMessage__")?.let { String(it.value()) },
+                                stackTrace = record.headers().lastHeader("__ExceptionStacktrace__")?.let { String(it.value()) },
+                                originalTopic = record.headers().lastHeader("__OriginalTopic__")?.let { String(it.value()) },
                                 sizeBytes = (record.serializedKeySize() + record.serializedValueSize()).toLong(),
                             ),
                         )
@@ -99,7 +99,7 @@ class MessageReaderService(
         }
 
         filters.exceptionTypes?.let { types ->
-            val exceptionHeader = record.headers().lastHeader("exception-class")?.let { String(it.value()) }
+            val exceptionHeader = record.headers().lastHeader("__ExceptionClass__")?.let { String(it.value()) }
             if (exceptionHeader == null || types.none { exceptionHeader.contains(it) }) return false
         }
         return true

@@ -23,6 +23,15 @@ class ReplayService(
             logger.info("Dry-run replay for {} messages from {} to {}", messages.size, request.sourceTopic, request.destinationTopic)
             return messages.map { "DryRun:${it.topic}:${it.partition}:${it.offset}" }
         }
+
+        // Force metadata refresh for destination topic before sending
+        try {
+            kafkaTemplate.partitionsFor(request.destinationTopic)
+            logger.info("Destination topic {} metadata retrieved successfully", request.destinationTopic)
+        } catch (e: Exception) {
+            logger.warn("Failed to retrieve metadata for destination topic {}: {}", request.destinationTopic, e.message)
+        }
+
         val rateLimiterNanos = request.ratePerSecond?.let { 1_000_000_000L / it } ?: 0
         val results = mutableListOf<String>()
         var lastSend = System.nanoTime()

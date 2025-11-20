@@ -63,9 +63,6 @@ class CliIntegrationTest {
     @Autowired
     lateinit var replayService: ReplayService
 
-    @Autowired(required = false)
-    var dlqCommands: DlqCommands? = null
-
     private lateinit var producer: KafkaProducer<ByteArray, ByteArray>
 
     @BeforeEach

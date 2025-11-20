@@ -9,7 +9,7 @@ class AlertingServiceTest {
 
     @Test
     fun `increments counter when threshold exceeded`() {
-        val service = AlertingService(meterRegistry, "", "")
+        val service = AlertingService(meterRegistry, "", "", 1000)
 
         service.notifyIfThresholdExceeded("topic", 1500, threshold = 1000)
 
@@ -19,7 +19,7 @@ class AlertingServiceTest {
 
     @Test
     fun `ignores counts under threshold`() {
-        val service = AlertingService(meterRegistry, "", "")
+        val service = AlertingService(meterRegistry, "", "", 1000)
 
         service.notifyIfThresholdExceeded("topic", 10, threshold = 1000)
 

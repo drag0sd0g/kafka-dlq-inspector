@@ -4,6 +4,7 @@ import com.dragos.kafkainspector.model.ReplayRequest
 import io.micrometer.core.instrument.MeterRegistry
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 import java.util.concurrent.TimeUnit
@@ -13,12 +14,13 @@ class ReplayService(
     private val messageReaderService: MessageReaderService,
     private val kafkaTemplate: KafkaTemplate<ByteArray, ByteArray>,
     private val meterRegistry: MeterRegistry,
+    @Value("\${kafka.replay.max-messages:1000}") private val replayMaxMessages: Int,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     fun replay(request: ReplayRequest): List<String> {
         val filters = request.filters ?: return emptyList()
-        val messages = messageReaderService.readMessages(listOf(request.sourceTopic), filters, 1000)
+        val messages = messageReaderService.readMessages(listOf(request.sourceTopic), filters, replayMaxMessages)
         if (request.dryRun) {
             logger.info("Dry-run replay for {} messages from {} to {}", messages.size, request.sourceTopic, request.destinationTopic)
             return messages.map { "DryRun:${it.topic}:${it.partition}:${it.offset}" }

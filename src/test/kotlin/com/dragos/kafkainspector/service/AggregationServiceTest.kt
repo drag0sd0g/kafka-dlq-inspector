@@ -15,7 +15,7 @@ import java.time.Instant
 class AggregationServiceTest {
     private val discovery: DlqTopicDiscovery = mock()
     private val reader: MessageReaderService = mock()
-    private val service = AggregationService(discovery, reader)
+    private val service = AggregationService(discovery, reader, 500)
 
     @Test
     fun `aggregates message stats across topics`() {

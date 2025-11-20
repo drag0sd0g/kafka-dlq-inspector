@@ -28,6 +28,23 @@ kafka:
     poll-size: 500
     poll-timeout-ms: 1000
     max-records: 1000
+  export:
+    max-records: 1000
+  search:
+    default-limit: 200
+  aggregation:
+    limit-per-topic: 500
+  replay:
+    max-messages: 1000
+  alerting:
+    threshold: 1000
+  kafka-config:
+    error-handler-backoff-ms: 5000
+api:
+  pagination:
+    default-page-size: 50
+cli:
+  default-limit: 500
 notifications:
   slack:
     webhook-url: ""

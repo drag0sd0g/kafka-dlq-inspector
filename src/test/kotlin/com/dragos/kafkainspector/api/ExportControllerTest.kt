@@ -14,7 +14,7 @@ import java.io.File
 class ExportControllerTest {
     private val searchService: SearchService = mock()
     private val exportService: ExportService = mock()
-    private val controller = ExportController(searchService, exportService)
+    private val controller = ExportController(searchService, exportService, 1000)
 
     @Test
     fun `exports json with searched messages`() {

@@ -5,6 +5,7 @@ import com.dragos.kafkainspector.model.AggregationResult
 import com.dragos.kafkainspector.model.SearchFilters
 import com.dragos.kafkainspector.model.TimeWindowAggregation
 import com.dragos.kafkainspector.model.TopicAggregation
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -13,10 +14,11 @@ import java.time.temporal.ChronoUnit
 class AggregationService(
     private val topicDiscovery: DlqTopicDiscovery,
     private val readerService: MessageReaderService,
+    @Value("\${kafka.aggregation.limit-per-topic:500}") private val defaultLimitPerTopic: Int,
 ) {
     fun aggregate(
         filters: SearchFilters,
-        limitPerTopic: Int = 500,
+        limitPerTopic: Int = defaultLimitPerTopic,
     ): AggregationResult {
         val topics = if (filters.topics.isEmpty()) topicDiscovery.discover().map { it.name } else filters.topics
         val messages = readerService.readMessages(topics, filters, limitPerTopic)

@@ -5,6 +5,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.kafka.common.serialization.ByteArraySerializer
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -22,6 +23,7 @@ import org.springframework.util.backoff.FixedBackOff
 @Configuration
 class KafkaConfig(
     private val properties: KafkaProperties,
+    @Value("\${kafka.kafka-config.error-handler-backoff-ms:5000}") private val errorHandlerBackoffMs: Long,
 ) {
     @Bean
     fun admin(): KafkaAdmin = KafkaAdmin(properties.buildAdminProperties(null))
@@ -55,7 +57,7 @@ class KafkaConfig(
     }
 
     @Bean
-    fun errorHandler(): CommonErrorHandler = DefaultErrorHandler(null, FixedBackOff(5000L, FixedBackOff.UNLIMITED_ATTEMPTS))
+    fun errorHandler(): CommonErrorHandler = DefaultErrorHandler(null, FixedBackOff(errorHandlerBackoffMs, FixedBackOff.UNLIMITED_ATTEMPTS))
 
     @Bean
     fun adminClient(): AdminClient = AdminClient.create(properties.buildAdminProperties(null))

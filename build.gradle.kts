@@ -29,6 +29,7 @@ dependencies {
     implementation("io.confluent:kafka-avro-serializer:7.5.3")
     implementation("info.picocli:picocli-spring-boot-starter:4.7.6")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.testcontainers:junit-jupiter")

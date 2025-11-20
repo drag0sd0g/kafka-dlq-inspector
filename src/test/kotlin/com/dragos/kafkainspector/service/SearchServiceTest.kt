@@ -13,7 +13,7 @@ import org.mockito.kotlin.whenever
 class SearchServiceTest {
     private val discovery: DlqTopicDiscovery = mock()
     private val reader: MessageReaderService = mock()
-    private val service = SearchService(discovery, reader)
+    private val service = SearchService(discovery, reader, 200)
 
     @Test
     fun `uses discovered topics when none supplied`() {

@@ -194,10 +194,7 @@ class CliIntegrationTest {
                 dryRun = true,
             )
 
-        val result =
-            assertDoesNotThrow {
-                replayService.replay(replayRequest)
-            }
+        val result = replayService.replay(replayRequest)
 
         assertNotNull(result)
         assertTrue(result.isNotEmpty())

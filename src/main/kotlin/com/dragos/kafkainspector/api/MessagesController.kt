@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.apache.kafka.common.TopicPartition
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 class MessagesController(
     private val searchService: SearchService,
     private val messageReaderService: MessageReaderService,
+    @Value("\${api.pagination.default-page-size:50}") private val defaultPageSize: Int,
 ) {
     @GetMapping("/{topic}/messages")
     @Operation(
@@ -52,9 +54,10 @@ class MessagesController(
         @RequestParam(defaultValue = "0")
         page: Int,
         @Parameter(description = "Page size")
-        @RequestParam(defaultValue = "50")
-        size: Int,
+        @RequestParam(required = false)
+        size: Int?,
     ): PageResponse<DlqMessage> {
+        val pageSize = size ?: defaultPageSize
         val filters =
             SearchFilters(
                 topics = listOf(topic),
@@ -62,9 +65,9 @@ class MessagesController(
                 offsetFrom = offsetFrom,
                 offsetTo = offsetTo,
             )
-        val result = searchService.search(filters, size * (page + 1))
-        val slice = result.drop(page * size).take(size)
-        return PageResponse(slice, page, size, result.size)
+        val result = searchService.search(filters, pageSize * (page + 1))
+        val slice = result.drop(page * pageSize).take(pageSize)
+        return PageResponse(slice, page, pageSize, result.size)
     }
 
     @GetMapping("/{topic}/messages/{partition}/{offset}")

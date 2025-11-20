@@ -14,6 +14,7 @@ class AlertingService(
     private val meterRegistry: MeterRegistry,
     @Value("\${notifications.slack.webhook-url:}") private val slackWebhook: String,
     @Value("\${notifications.webhook.url:}") private val genericWebhook: String,
+    @Value("\${kafka.alerting.threshold:1000}") private val defaultThreshold: Long,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
     private val restTemplate = RestTemplate()
@@ -21,7 +22,7 @@ class AlertingService(
     fun notifyIfThresholdExceeded(
         topic: String,
         count: Long,
-        threshold: Long = 1000,
+        threshold: Long = defaultThreshold,
     ) {
         if (count < threshold) return
         val message = "DLQ threshold exceeded for $topic: $count messages"

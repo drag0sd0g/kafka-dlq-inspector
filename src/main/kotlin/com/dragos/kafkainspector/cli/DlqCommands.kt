@@ -101,6 +101,7 @@ class ReplayCommand(
 class ExportCommand(
     private val searchService: SearchService,
     private val exportService: ExportService,
+    @Value("\${cli.default-limit:500}") private val defaultLimit: Int,
 ) : Callable<Int> {
     @CommandLine.Option(names = ["--topic"], required = true)
     lateinit var topic: String
@@ -109,7 +110,7 @@ class ExportCommand(
     lateinit var fileName: String
 
     override fun call(): Int {
-        val messages = searchService.search(SearchFilters(topics = listOf(topic)), 500)
+        val messages = searchService.search(SearchFilters(topics = listOf(topic)), defaultLimit)
         val file = File(fileName)
         exportService.exportJson(messages, file)
         println("Exported ${messages.size} messages to ${file.absolutePath}")

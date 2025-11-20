@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -22,6 +23,7 @@ import java.io.File
 class ExportController(
     private val searchService: SearchService,
     private val exportService: ExportService,
+    @Value("\${kafka.export.max-records:1000}") private val exportMaxRecords: Int,
 ) {
     @PostMapping("/json", produces = [MediaType.APPLICATION_JSON_VALUE])
     @Operation(
@@ -37,7 +39,7 @@ class ExportController(
     fun exportJson(
         @RequestBody filters: SearchFilters,
     ): ResponseEntity<ByteArray> {
-        val messages = searchService.search(filters, 1_000)
+        val messages = searchService.search(filters, exportMaxRecords)
         val file = File.createTempFile("dlq", "json")
         exportService.exportJson(messages, file)
         return ResponseEntity
@@ -60,7 +62,7 @@ class ExportController(
     fun exportCsv(
         @RequestBody filters: SearchFilters,
     ): ResponseEntity<ByteArray> {
-        val messages = searchService.search(filters, 1_000)
+        val messages = searchService.search(filters, exportMaxRecords)
         val file = File.createTempFile("dlq", "csv")
         exportService.exportCsv(messages, file)
         return ResponseEntity

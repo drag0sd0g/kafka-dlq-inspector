@@ -314,7 +314,7 @@ class EndToEndIntegrationTest {
                     "message-$i".toByteArray(),
                 )
             record.headers().add("userId", "user-$i".toByteArray())
-            record.headers().add("region", if (i % 2 == 0) "US" else "EU".toByteArray())
+            record.headers().add("region", (if (i % 2 == 0) "US" else "EU").toByteArray())
             producer.send(record).get()
         }
         producer.flush()
@@ -379,7 +379,7 @@ class EndToEndIntegrationTest {
         for (partition in 0..2) {
             for (i in 0..4) {
                 val jsonPayload = """{"id": "$partition-$i", "error": "Test error $i"}""".toByteArray()
-                val record = ProducerRecord(topic, partition, null, jsonPayload)
+                val record = ProducerRecord<ByteArray, ByteArray>(topic, partition, null, jsonPayload)
                 record.headers().add("__TypeId__", "com.example.TestMessage".toByteArray())
                 producer.send(record).get()
             }

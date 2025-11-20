@@ -19,7 +19,7 @@ class ReplayServiceTest {
     private val reader: MessageReaderService = mock()
     private val kafkaTemplate: KafkaTemplate<ByteArray, ByteArray> = mock()
     private val meterRegistry = SimpleMeterRegistry()
-    private val service = ReplayService(reader, kafkaTemplate, meterRegistry)
+    private val service = ReplayService(reader, kafkaTemplate, meterRegistry, 1000)
 
     @Test
     fun `performs dry run without producing messages`() {

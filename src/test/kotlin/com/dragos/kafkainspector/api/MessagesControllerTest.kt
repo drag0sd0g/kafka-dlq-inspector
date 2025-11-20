@@ -17,7 +17,7 @@ import org.mockito.kotlin.whenever
 class MessagesControllerTest {
     private val searchService: SearchService = mock()
     private val readerService: MessageReaderService = mock()
-    private val controller = MessagesController(searchService, readerService)
+    private val controller = MessagesController(searchService, readerService, 50)
 
     @Test
     fun `returns paginated messages`() {

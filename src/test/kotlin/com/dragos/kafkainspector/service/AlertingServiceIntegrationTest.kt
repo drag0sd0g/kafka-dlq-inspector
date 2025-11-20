@@ -132,7 +132,7 @@ class AlertingServiceIntegrationTest {
         val criticalException = "java.lang.OutOfMemoryError"
         repeat(5) { i ->
             val payload = """{"critical": $i}""".toByteArray()
-            val record = ProducerRecord(topic, 0, null, payload)
+            val record = ProducerRecord<ByteArray, ByteArray>(topic, 0, null, payload)
             record.headers().add("__ExceptionClass__", criticalException.toByteArray())
             record.headers().add("__ExceptionMessage__", "Heap space exhausted".toByteArray())
             producer.send(record).get()
@@ -141,7 +141,7 @@ class AlertingServiceIntegrationTest {
         val regularException = "java.lang.NullPointerException"
         repeat(2) { i ->
             val payload = """{"regular": $i}""".toByteArray()
-            val record = ProducerRecord(topic, 0, null, payload)
+            val record = ProducerRecord<ByteArray, ByteArray>(topic, 0, null, payload)
             record.headers().add("__ExceptionClass__", regularException.toByteArray())
             producer.send(record).get()
         }

@@ -290,7 +290,7 @@ class RestApiIntegrationTest {
         repeat(5) { i ->
             val partition = i % 2
             val payload = """{"agg-test": $i}""".toByteArray()
-            val record = ProducerRecord(topic, partition, null, payload)
+            val record = ProducerRecord<ByteArray, ByteArray>(topic, partition, null, payload)
             if (i < 3) {
                 record.headers().add("__ExceptionClass__", "java.lang.NullPointerException".toByteArray())
             } else {

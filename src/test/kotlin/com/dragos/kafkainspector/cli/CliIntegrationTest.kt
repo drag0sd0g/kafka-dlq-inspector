@@ -216,7 +216,7 @@ class CliIntegrationTest {
         for (partition in 0..1) {
             repeat(3) { i ->
                 val payload = """{"partition": $partition, "index": $i}""".toByteArray()
-                val record = ProducerRecord(topic, partition, null, payload)
+                val record = ProducerRecord<ByteArray, ByteArray>(topic, partition, null, payload)
                 record.headers().add("userId", "user-$partition".toByteArray())
                 producer.send(record).get()
             }
@@ -292,7 +292,7 @@ class CliIntegrationTest {
 
         exceptions.forEach { exceptionType ->
             val payload = """{"error": "test"}""".toByteArray()
-            val record = ProducerRecord(topic, 0, null, payload)
+            val record = ProducerRecord<ByteArray, ByteArray>(topic, 0, null, payload)
             record.headers().add("__ExceptionClass__", exceptionType.toByteArray())
             record.headers().add("__ExceptionMessage__", "Test error message".toByteArray())
             record.headers().add("__OriginalTopic__", "source-topic".toByteArray())

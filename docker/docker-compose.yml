@@ -4,6 +4,7 @@ services:
     ports:
       - "9092:9092"
     environment:
+      # Generate a unique cluster ID for production using: docker run --rm confluentinc/cp-kafka:7.5.1 kafka-storage random-uuid
       CLUSTER_ID: 'mHMV5eWKQZGH_tG7Dd75HA'
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
@@ -22,7 +23,7 @@ services:
       - dlq-net
     hostname: kafka
     healthcheck:
-      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1"]
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
       interval: 10s
       timeout: 10s
       retries: 5

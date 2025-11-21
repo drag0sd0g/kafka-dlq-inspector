@@ -48,7 +48,7 @@ The artifact will be created at `build/libs/kafka-dlq-inspector-0.1.0-all.jar`
 Start Kafka, Zookeeper, and Schema Registry using Docker Compose:
 
 ```bash
-docker compose -f docker/docker-compose.yml up -d
+docker compose -f docker/docker-compose.yml up -d zookeeper kafka schema-registry
 ```
 
 This will start:

@@ -33,6 +33,10 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
     implementation("io.swagger.core.v3:swagger-annotations:2.2.20")
     implementation("io.swagger.parser.v3:swagger-parser:2.1.20")
+    // JAXB dependencies for Java 11+ (javax.xml.bind removed from JDK)
+    // Note: Using javax.xml.bind (not jakarta) because swagger-core 2.2.20 requires the old javax namespace
+    implementation("javax.xml.bind:jaxb-api:2.3.1")
+    implementation("org.glassfish.jaxb:jaxb-runtime:4.0.5")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.testcontainers:junit-jupiter")
@@ -76,8 +80,24 @@ tasks.jar {
     enabled = false
 }
 
+// Use Spring Boot's bootJar for proper Spring Boot packaging (RECOMMENDED)
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    archiveFileName.set("${archiveBaseName.get()}-${archiveVersion.get()}-all.jar")
+}
+
+// shadowJar is kept for backwards compatibility only, but bootJar is the recommended approach
+// Note: shadowJar produces a different artifact name (-shadow.jar) to avoid conflicts
 tasks.shadowJar {
-    archiveClassifier.set("all")
+    archiveClassifier.set("shadow")
+    manifest {
+        attributes["Main-Class"] = "com.dragos.kafkainspector.KafkaDlqInspectorApplicationKt"
+    }
+    mergeServiceFiles()
+    append("META-INF/spring.handlers")
+    append("META-INF/spring.schemas")
+    append("META-INF/spring.tooling")
+    append("META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports")
+    append("META-INF/spring/org.springframework.boot.actuate.autoconfigure.web.ManagementContextConfiguration.imports")
 }
 
 openApiGenerate {

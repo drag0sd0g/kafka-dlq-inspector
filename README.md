@@ -35,10 +35,10 @@ Ensure Docker is installed and running on your system
 
 ### Build the Application
 
-First, build the fat JAR using Gradle:
+Build the fat JAR using Gradle:
 
 ```bash
-./gradlew bootJar
+./gradlew clean build shadowJar
 ```
 
 The artifact will be created at `build/libs/kafka-dlq-inspector-0.1.0-all.jar`
@@ -55,8 +55,6 @@ This will start:
 - Kafka broker on port 9092
 - Zookeeper on port 2181
 - Schema Registry on port 8081
-
-**Note**: We only start the supporting services here (not the `app` service) because we'll run the application locally using the JAR file.
 
 ### Run the Application
 

@@ -48,8 +48,8 @@ class ExportControllerTest {
 
         val hasAttachmentHeader =
             response.headers.contentDisposition
-                ?.toString()
-                ?.contains("attachment") == true
+                .toString()
+                .contains("attachment") == true
 
         assertTrue(hasAttachmentHeader)
         assertTrue(response.body!!.isNotEmpty())
@@ -87,8 +87,8 @@ class ExportControllerTest {
 
         val hasAttachmentHeader =
             response.headers.contentDisposition
-                ?.toString()
-                ?.contains("attachment") == true
+                .toString()
+                .contains("attachment") == true
 
         assertTrue(hasAttachmentHeader)
         assertTrue(response.body!!.isNotEmpty())

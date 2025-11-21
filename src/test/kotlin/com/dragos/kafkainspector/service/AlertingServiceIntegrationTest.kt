@@ -209,7 +209,6 @@ class AlertingServiceIntegrationTest {
 
         val now = System.currentTimeMillis()
         val fiveMinutesAgo = now - 300000
-        val tenMinutesAgo = now - 600000
 
         // Produce messages across different time windows
         repeat(5) { i ->
@@ -243,15 +242,6 @@ class AlertingServiceIntegrationTest {
                 SearchFilters(
                     topics = listOf(topic),
                     timeFrom = now - 120000, // Last 2 minutes
-                ),
-                100,
-            )
-
-        val olderMessages =
-            searchService.search(
-                SearchFilters(
-                    topics = listOf(topic),
-                    timeTo = now - 240000, // Older than 4 minutes
                 ),
                 100,
             )

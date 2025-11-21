@@ -16,7 +16,7 @@ class SearchService(
         filters: SearchFilters,
         limit: Int = defaultLimit,
     ): List<DlqMessage> {
-        val topics = if (filters.topics.isNotEmpty()) filters.topics else topicDiscovery.discover().map { it.name }
+        val topics = filters.topics.ifEmpty { topicDiscovery.discover().map { it.name } }
         return messageReaderService.readMessages(topics, filters, limit)
     }
 }

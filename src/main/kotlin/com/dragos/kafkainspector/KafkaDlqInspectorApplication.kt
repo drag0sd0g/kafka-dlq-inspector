@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class KafkaDlqInspectorApplication
 
 fun main(args: Array<String>) {
-    runApplication<com.dragos.kafkainspector.KafkaDlqInspectorApplication>(*args)
+    runApplication<KafkaDlqInspectorApplication>(*args)
 }

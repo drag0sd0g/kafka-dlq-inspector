@@ -47,15 +47,14 @@ The artifact will be created at `build/libs/kafka-dlq-inspector-0.1.0-all.jar`
 
 ### Start Supporting Services
 
-Start Kafka, Zookeeper, and Schema Registry using Docker Compose:
+Start Kafka and Schema Registry using Docker Compose:
 
 ```bash
-docker compose -f docker/docker-compose.yml up -d zookeeper kafka schema-registry
+docker compose -f docker/docker-compose.yml up -d kafka schema-registry
 ```
 
 This will start:
-- Kafka broker on port 9092
-- Zookeeper on port 2181
+- Kafka broker in KRaft mode on port 9092
 - Schema Registry on port 8081
 
 ### Run the Application
@@ -91,7 +90,7 @@ A comprehensive demo script is provided that demonstrates all functionality:
 ```
 
 This script will:
-- Start all dependencies (Kafka, Zookeeper, Schema Registry)
+- Start all dependencies (Kafka in KRaft mode and Schema Registry)
 - Build and run the application
 - Create test DLQ topics with sample data
 - Demonstrate CLI commands

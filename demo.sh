@@ -5,7 +5,7 @@
 # 
 # This script demonstrates all the functionality of the Kafka DLQ Inspector
 # application including:
-# - Starting all dependencies (Kafka, Zookeeper, Schema Registry)
+# - Starting all dependencies (Kafka and Schema Registry in KRaft mode)
 # - Building and running the application
 # - Creating test DLQ topics with sample data
 # - Demonstrating CLI commands
@@ -123,8 +123,8 @@ build_application() {
 start_docker_services() {
     log_section "Starting Docker Services"
     
-    log_info "Starting Zookeeper, Kafka, and Schema Registry..."
-    docker compose -f docker/docker-compose.yml up -d zookeeper kafka schema-registry
+    log_info "Starting Kafka and Schema Registry..."
+    docker compose -f docker/docker-compose.yml up -d kafka schema-registry
     
     log_info "Waiting for Kafka to be ready..."
     sleep 10
@@ -395,7 +395,7 @@ show_summary() {
     log_section "Demo Summary"
     
     echo "✅ Services Status:"
-    echo "   - Kafka: Running on localhost:9092"
+    echo "   - Kafka: Running on localhost:9092 (KRaft mode)"
     echo "   - Schema Registry: Running on localhost:8081"
     echo "   - Application: Running on localhost:$APP_PORT"
     echo ""

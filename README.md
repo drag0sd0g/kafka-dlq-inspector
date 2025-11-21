@@ -1,5 +1,7 @@
 # Kafka DLQ Inspector
 
+English | [日本語](README.ja.md)
+
 A comprehensive Kotlin-based Spring Boot application for discovering, inspecting, aggregating, exporting, replaying, and monitoring Kafka dead letter queue (DLQ) topics.
 
 ## Overview
@@ -78,6 +80,28 @@ Access the OpenAPI documentation:
 
 ```bash
 open http://localhost:8080/swagger-ui.html
+```
+
+## Demo Script
+
+A comprehensive demo script is provided that demonstrates all functionality:
+
+```bash
+./demo.sh
+```
+
+This script will:
+- Start all dependencies (Kafka, Zookeeper, Schema Registry)
+- Build and run the application
+- Create test DLQ topics with sample data
+- Demonstrate CLI commands
+- Demonstrate REST API endpoints
+- Show advanced usage scenarios
+
+To stop all services:
+
+```bash
+./demo.sh stop
 ```
 
 ## Configuration

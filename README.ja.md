@@ -329,70 +329,7 @@ src/
 └── test/                     # テスト
 ```
 
-### ローカル開発のための IDE セットアップ
-
-**IntelliJ IDEA**:
-1. プロジェクトを Gradle プロジェクトとしてインポート
-2. Kotlin プラグインが有効になっていることを確認
-3. `KafkaDlqInspectorApplication.kt` の main メソッドを実行
-
-**VS Code**:
-1. Java および Kotlin 拡張機能をインストール
-2. Gradle タスクを使用してビルドと実行
-
-## コントリビューション
-
-コントリビューションを歓迎します！以下の手順に従ってください：
-
-1. リポジトリをフォーク
-2. 機能ブランチを作成（`git checkout -b feature/amazing-feature`）
-3. 変更をコミット（`git commit -m 'Add amazing feature'`）
-4. ブランチにプッシュ（`git push origin feature/amazing-feature`）
-5. プルリクエストを開く
-
 コードを提出する前に必ず以下を実行してください：
 ```bash
 ./gradlew ktlintFormat test
 ```
-
-## ライセンス
-
-このプロジェクトは Apache License 2.0 の下でライセンスされています - 詳細は LICENSE ファイルを参照してください。
-
-## サポート
-
-- 問題の報告：[GitHub Issues](https://github.com/drag0sd0g/kafka-dlq-inspector/issues)
-- ドキュメント：[docs/](docs/)
-- デモ：`./demo.sh` を実行
-
-## 謝辞
-
-- Spring Boot チーム
-- Apache Kafka コミュニティ
-- Confluent Platform
-- すべてのコントリビューター
-
-## ロードマップ
-
-今後の機能：
-- [ ] Web UI ダッシュボード
-- [ ] より多くのメッセージフォーマットのサポート（Protobuf、Thrift）
-- [ ] 高度なフィルタリングオプション
-- [ ] バッチリプレイの改善
-- [ ] Kubernetes Helm チャート
-- [ ] データ保持ポリシー
-- [ ] メッセージ変換機能
-
-## バージョン履歴
-
-### 0.1.0（2024-11-21）
-- 初回リリース
-- 基本的な DLQ 検査機能
-- REST API と CLI サポート
-- Prometheus メトリクス
-- デモスクリプト
-- 日本語ドキュメント
-
----
-
-Made with ❤️ by the Kafka DLQ Inspector team

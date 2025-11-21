@@ -4,6 +4,7 @@ services:
     ports:
       - "9092:9092"
     environment:
+      CLUSTER_ID: 'mHMV5eWKQZGH_tG7Dd75HA'
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
@@ -16,34 +17,50 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_CLUSTER_ID: 'my-cluster-id'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
     networks:
       - dlq-net
     hostname: kafka
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   schema-registry:
     image: confluentinc/cp-schema-registry:7.5.1
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     ports:
       - "8081:8081"
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:29092
+      SCHEMA_REGISTRY_LISTENERS: 'http://0.0.0.0:8081'
     networks:
       - dlq-net
     hostname: schema-registry
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   app:
     build:
       context: ..
       dockerfile: docker/Dockerfile
     depends_on:
-      - kafka
-      - schema-registry
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
     environment:
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
-      SPRING_KAFKA_PROPERTIES_SCHEMA_REGISTRY_URL: http://localhost:8081
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_KAFKA_PROPERTIES_SCHEMA_REGISTRY_URL: http://schema-registry:8081
     ports:
       - "8080:8080"
     networks:

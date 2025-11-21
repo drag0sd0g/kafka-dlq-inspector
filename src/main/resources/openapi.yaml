@@ -1,0 +1,444 @@
+openapi: 3.0.1
+info:
+  title: Kafka DLQ Inspector API
+  version: 0.1.0
+  description: >-
+    REST API for discovering, inspecting, aggregating, exporting, and replaying Kafka dead letter queue topics.
+    Features: Discover DLQ topics via regex configuration, stream and decode DLQ messages (JSON/Avro)
+    with filtering and pagination, aggregations by topic, partition, exception type, and time windows,
+    replay messages to original or alternate topics with dry-run and rate limiting, export messages to JSON or CSV.
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+tags:
+  - name: Topics
+    description: DLQ topic discovery operations
+  - name: Messages
+    description: DLQ message retrieval operations
+  - name: Aggregations
+    description: DLQ message aggregation operations
+  - name: Replay
+    description: DLQ message replay operations
+  - name: Export
+    description: DLQ message export operations
+paths:
+  /api/topics:
+    get:
+      tags:
+        - Topics
+      summary: List DLQ topics
+      description: Discover and list all dead letter queue topics matching the configured pattern
+      operationId: listTopics
+      responses:
+        '200':
+          description: Successfully retrieved list of DLQ topics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DlqTopicInfo'
+  /api/topics/{topic}/messages:
+    get:
+      tags:
+        - Messages
+      summary: List messages from a topic
+      description: Retrieve paginated messages from a DLQ topic with optional filtering by partition and offset range
+      operationId: listMessages
+      parameters:
+        - name: topic
+          in: path
+          description: Topic name
+          required: true
+          schema:
+            type: string
+        - name: partition
+          in: query
+          description: Filter by partition number
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: offsetFrom
+          in: query
+          description: Filter by offset from (inclusive)
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: offsetTo
+          in: query
+          description: Filter by offset to (inclusive)
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: page
+          in: query
+          description: Page number (0-indexed)
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: size
+          in: query
+          description: Page size
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Successfully retrieved messages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageResponseDlqMessage'
+        '404':
+          description: Topic not found
+  /api/topics/{topic}/messages/{partition}/{offset}:
+    get:
+      tags:
+        - Messages
+      summary: Get a specific message
+      description: Retrieve a single message from a DLQ topic by partition and offset
+      operationId: getMessage
+      parameters:
+        - name: topic
+          in: path
+          description: Topic name
+          required: true
+          schema:
+            type: string
+        - name: partition
+          in: path
+          description: Partition number
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: offset
+          in: path
+          description: Message offset
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Successfully retrieved message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DlqMessage'
+        '404':
+          description: Message not found
+  /api/aggregations:
+    post:
+      tags:
+        - Aggregations
+      summary: Aggregate messages
+      description: Compute aggregations on DLQ messages by topic, partition, exception type, and time windows
+      operationId: aggregate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchFilters'
+      responses:
+        '200':
+          description: Successfully computed aggregations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AggregationResult'
+        '400':
+          description: Invalid search filters
+  /api/replay:
+    post:
+      tags:
+        - Replay
+      summary: Replay messages
+      description: Replay DLQ messages to original or alternate topics with optional dry-run mode and rate limiting
+      operationId: replay
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplayRequest'
+      responses:
+        '200':
+          description: Successfully replayed messages or performed dry-run
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '400':
+          description: Invalid replay request
+  /api/export/json:
+    post:
+      tags:
+        - Export
+      summary: Export messages to JSON
+      description: Export DLQ messages matching the provided filters to a JSON file
+      operationId: exportJson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchFilters'
+      responses:
+        '200':
+          description: Successfully exported messages to JSON
+          content:
+            application/json:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid search filters
+  /api/export/csv:
+    post:
+      tags:
+        - Export
+      summary: Export messages to CSV
+      description: Export DLQ messages matching the provided filters to a CSV file
+      operationId: exportCsv
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchFilters'
+      responses:
+        '200':
+          description: Successfully exported messages to CSV
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid search filters
+components:
+  schemas:
+    DlqTopicInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        partitions:
+          type: integer
+          format: int32
+        messageCount:
+          type: integer
+          format: int64
+        retentionMs:
+          type: integer
+          format: int64
+          nullable: true
+    DlqMessage:
+      type: object
+      properties:
+        topic:
+          type: string
+        partition:
+          type: integer
+          format: int32
+        offset:
+          type: integer
+          format: int64
+        key:
+          type: string
+          format: byte
+          nullable: true
+        value:
+          type: string
+          format: byte
+        decodedValue:
+          type: object
+          nullable: true
+          description: Decoded message value (JSON/Avro)
+        headers:
+          type: object
+          additionalProperties: true
+        timestamp:
+          type: integer
+          format: int64
+        ingestionTimestamp:
+          type: integer
+          format: int64
+          nullable: true
+        exceptionClass:
+          type: string
+          nullable: true
+        exceptionMessage:
+          type: string
+          nullable: true
+        stackTrace:
+          type: string
+          nullable: true
+        originalTopic:
+          type: string
+          nullable: true
+        sizeBytes:
+          type: integer
+          format: int64
+    PageResponseDlqMessage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DlqMessage'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int32
+    SearchFilters:
+      type: object
+      properties:
+        topics:
+          type: array
+          items:
+            type: string
+          default: []
+        timeFrom:
+          type: integer
+          format: int64
+          nullable: true
+        timeTo:
+          type: integer
+          format: int64
+          nullable: true
+        keyRegex:
+          type: string
+          nullable: true
+          pattern: '.*'
+        payloadRegex:
+          type: string
+          nullable: true
+          pattern: '.*'
+        headerMatch:
+          type: object
+          additionalProperties:
+            type: string
+          default: {}
+        exceptionTypes:
+          type: array
+          items:
+            type: string
+          nullable: true
+        partitions:
+          type: array
+          items:
+            type: integer
+            format: int32
+          nullable: true
+        offsetFrom:
+          type: integer
+          format: int64
+          nullable: true
+        offsetTo:
+          type: integer
+          format: int64
+          nullable: true
+    TopicAggregation:
+      type: object
+      properties:
+        topic:
+          type: string
+        partitionCount:
+          type: integer
+          format: int32
+        messageCount:
+          type: integer
+          format: int64
+        exceptionCounts:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+        averageSizeBytes:
+          type: number
+          format: double
+        p95SizeBytes:
+          type: number
+          format: double
+    TimeWindowAggregation:
+      type: object
+      properties:
+        topic:
+          type: string
+        windowStart:
+          type: integer
+          format: int64
+        windowEnd:
+          type: integer
+          format: int64
+        messageCount:
+          type: integer
+          format: int64
+        ratePerSecond:
+          type: number
+          format: double
+    AggregationResult:
+      type: object
+      properties:
+        topics:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopicAggregation'
+        windows:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeWindowAggregation'
+    ReplayRequest:
+      type: object
+      required:
+        - cluster
+        - sourceTopic
+        - destinationTopic
+      properties:
+        cluster:
+          type: string
+        sourceTopic:
+          type: string
+        destinationTopic:
+          type: string
+        partition:
+          type: integer
+          format: int32
+          nullable: true
+        offsets:
+          type: array
+          items:
+            type: integer
+            format: int64
+          nullable: true
+        filters:
+          $ref: '#/components/schemas/SearchFilters'
+        dryRun:
+          type: boolean
+          default: true
+        ratePerSecond:
+          type: integer
+          format: int32
+          nullable: true
+        transactional:
+          type: boolean
+          default: false

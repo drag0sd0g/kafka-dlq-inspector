@@ -7,6 +7,7 @@ plugins {
     kotlin("plugin.spring") version "1.9.23"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.jlleitschuh.gradle.ktlint") version "14.0.1"
+    id("org.openapi.generator") version "7.2.0"
     jacoco
 }
 
@@ -30,6 +31,8 @@ dependencies {
     implementation("info.picocli:picocli-spring-boot-starter:4.7.6")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
+    implementation("io.swagger.core.v3:swagger-annotations:2.2.20")
+    implementation("io.swagger.parser.v3:swagger-parser:2.1.20")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.testcontainers:junit-jupiter")
@@ -75,6 +78,41 @@ tasks.jar {
 
 tasks.shadowJar {
     archiveClassifier.set("all")
+}
+
+openApiGenerate {
+    generatorName.set("kotlin-spring")
+    inputSpec.set("$rootDir/src/main/resources/openapi.yaml")
+    outputDir.set("${layout.buildDirectory.get()}/generated/openapi")
+    apiPackage.set("com.dragos.kafkainspector.api.generated")
+    modelPackage.set("com.dragos.kafkainspector.model.generated")
+    configOptions.set(
+        mapOf(
+            "interfaceOnly" to "true",
+            "skipDefaultInterface" to "true",
+            "useTags" to "true",
+            "useSpringBoot3" to "true",
+            "serializationLibrary" to "jackson",
+        ),
+    )
+}
+
+kotlin.sourceSets["main"].kotlin.srcDir("${layout.buildDirectory.get()}/generated/openapi/src/main/kotlin")
+
+tasks.named("compileKotlin") {
+    dependsOn("openApiGenerate")
+}
+
+tasks.withType<org.jlleitschuh.gradle.ktlint.tasks.BaseKtLintCheckTask> {
+    dependsOn("openApiGenerate")
+}
+
+configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+    filter {
+        exclude { entry ->
+            entry.file.toString().contains("/generated/")
+        }
+    }
 }
 
 tasks.named("build") {

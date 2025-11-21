@@ -265,7 +265,9 @@ components:
           type: string
           format: byte
         decodedValue:
+          type: object
           nullable: true
+          description: Decoded message value (JSON/Avro)
         headers:
           type: object
           additionalProperties: true

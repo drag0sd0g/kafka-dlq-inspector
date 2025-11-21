@@ -56,12 +56,22 @@ sudo dnf install docker docker-compose
 # Requires WSL 2 backend
 ```
 
+### Build the Application
+
+First, build the fat JAR using Gradle:
+
+```bash
+./gradlew bootJar
+```
+
+The artifact will be created at `build/libs/kafka-dlq-inspector-0.1.0-all.jar`
+
 ### Start Supporting Services
 
 Start Kafka, Zookeeper, and Schema Registry using Docker Compose:
 
 ```bash
-docker compose -f docker/docker-compose.yml up -d
+docker compose -f docker/docker-compose.yml up -d zookeeper kafka schema-registry
 ```
 
 This will start:
@@ -69,15 +79,7 @@ This will start:
 - Zookeeper on port 2181
 - Schema Registry on port 8081
 
-### Build the Application
-
-Build the fat JAR using Gradle:
-
-```bash
-./gradlew shadowJar
-```
-
-The artifact will be created at `build/libs/kafka-dlq-inspector-0.1.0-all.jar`
+**Note**: We only start the supporting services here (not the `app` service) because we'll run the application locally using the JAR file.
 
 ### Run the Application
 
@@ -264,30 +266,41 @@ Automatically format code:
 ### Create Production JAR
 
 ```bash
-./gradlew clean shadowJar
+./gradlew clean bootJar
 ```
 
 ### Docker Image
 
-Create a Dockerfile in the project root:
+A Dockerfile is provided in the `docker/` directory. To build and run the application using Docker:
 
-```dockerfile
-FROM eclipse-temurin:21-jre-alpine
-WORKDIR /app
-COPY build/libs/kafka-dlq-inspector-0.1.0-all.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
-```
-
-Build and run:
+**Option 1: Using docker-compose (recommended for development)**
 
 ```bash
-./gradlew shadowJar
-docker build -t kafka-dlq-inspector:0.1.0 .
+# First, build the JAR
+./gradlew bootJar
+
+# Then start all services including the application
+docker compose -f docker/docker-compose.yml up -d
+
+# The application will be available at http://localhost:8080
+```
+
+**Option 2: Build and run manually**
+
+```bash
+# Build the JAR
+./gradlew bootJar
+
+# Build the Docker image
+docker build -f docker/Dockerfile -t kafka-dlq-inspector:0.1.0 .
+
+# Run the container
 docker run -p 8080:8080 \
   -e SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092 \
   kafka-dlq-inspector:0.1.0
 ```
+
+**Note**: The Docker build requires the JAR file to exist at `build/libs/kafka-dlq-inspector-0.1.0-all.jar`, so always run `./gradlew bootJar` before building the Docker image.
 
 ## Deployment
 

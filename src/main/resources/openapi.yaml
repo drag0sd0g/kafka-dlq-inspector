@@ -239,9 +239,13 @@ components:
         partitions:
           type: integer
           format: int32
-        recordCount:
+        messageCount:
           type: integer
           format: int64
+        retentionMs:
+          type: integer
+          format: int64
+          nullable: true
     DlqMessage:
       type: object
       properties:
@@ -253,21 +257,44 @@ components:
         offset:
           type: integer
           format: int64
-        timestamp:
-          type: string
-          format: date-time
         key:
           type: string
+          format: byte
+          nullable: true
         value:
           type: string
+          format: byte
+        decodedValue:
+          nullable: true
         headers:
           type: object
-          additionalProperties:
-            type: string
+          additionalProperties: true
+        timestamp:
+          type: integer
+          format: int64
+        ingestionTimestamp:
+          type: integer
+          format: int64
+          nullable: true
+        exceptionClass:
+          type: string
+          nullable: true
+        exceptionMessage:
+          type: string
+          nullable: true
+        stackTrace:
+          type: string
+          nullable: true
+        originalTopic:
+          type: string
+          nullable: true
+        sizeBytes:
+          type: integer
+          format: int64
     PageResponseDlqMessage:
       type: object
       properties:
-        content:
+        items:
           type: array
           items:
             $ref: '#/components/schemas/DlqMessage'
@@ -287,73 +314,129 @@ components:
           type: array
           items:
             type: string
+          default: []
+        timeFrom:
+          type: integer
+          format: int64
+          nullable: true
+        timeTo:
+          type: integer
+          format: int64
+          nullable: true
+        keyRegex:
+          type: string
+          nullable: true
+          pattern: '.*'
+        payloadRegex:
+          type: string
+          nullable: true
+          pattern: '.*'
+        headerMatch:
+          type: object
+          additionalProperties:
+            type: string
+          default: {}
+        exceptionTypes:
+          type: array
+          items:
+            type: string
+          nullable: true
         partitions:
           type: array
           items:
             type: integer
             format: int32
+          nullable: true
         offsetFrom:
           type: integer
           format: int64
+          nullable: true
         offsetTo:
           type: integer
           format: int64
-        timestampFrom:
+          nullable: true
+    TopicAggregation:
+      type: object
+      properties:
+        topic:
           type: string
-          format: date-time
-        timestampTo:
-          type: string
-          format: date-time
-        headers:
+        partitionCount:
+          type: integer
+          format: int32
+        messageCount:
+          type: integer
+          format: int64
+        exceptionCounts:
           type: object
           additionalProperties:
-            type: string
-        exceptionTypes:
-          type: array
-          items:
-            type: string
+            type: integer
+            format: int64
+        averageSizeBytes:
+          type: number
+          format: double
+        p95SizeBytes:
+          type: number
+          format: double
+    TimeWindowAggregation:
+      type: object
+      properties:
+        topic:
+          type: string
+        windowStart:
+          type: integer
+          format: int64
+        windowEnd:
+          type: integer
+          format: int64
+        messageCount:
+          type: integer
+          format: int64
+        ratePerSecond:
+          type: number
+          format: double
     AggregationResult:
       type: object
       properties:
-        byTopic:
-          type: object
-          additionalProperties:
-            type: integer
-            format: int64
-        byPartition:
-          type: object
-          additionalProperties:
-            type: integer
-            format: int64
-        byExceptionType:
-          type: object
-          additionalProperties:
-            type: integer
-            format: int64
-        byTimeWindow:
-          type: object
-          additionalProperties:
-            type: integer
-            format: int64
-        total:
-          type: integer
-          format: int64
+        topics:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopicAggregation'
+        windows:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeWindowAggregation'
     ReplayRequest:
       type: object
       required:
+        - cluster
         - sourceTopic
         - destinationTopic
       properties:
+        cluster:
+          type: string
         sourceTopic:
           type: string
         destinationTopic:
           type: string
+        partition:
+          type: integer
+          format: int32
+          nullable: true
+        offsets:
+          type: array
+          items:
+            type: integer
+            format: int64
+          nullable: true
         filters:
           $ref: '#/components/schemas/SearchFilters'
         dryRun:
           type: boolean
-          default: false
-        rateLimit:
+          default: true
+        ratePerSecond:
           type: integer
           format: int32
-          description: Maximum messages per second
+          nullable: true
+        transactional:
+          type: boolean
+          default: false

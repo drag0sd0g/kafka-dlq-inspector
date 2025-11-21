@@ -12,7 +12,9 @@ class OpenApiConfig {
     fun customOpenAPI(): OpenAPI {
         // Load OpenAPI spec from external YAML file
         val resource = ClassPathResource("openapi.yaml")
+        val yamlContent = resource.inputStream.bufferedReader().use { it.readText() }
         val parser = OpenAPIV3Parser()
-        return parser.read(resource.file.absolutePath) ?: throw IllegalStateException("Failed to load OpenAPI spec from openapi.yaml")
+        val parseResult = parser.readContents(yamlContent)
+        return parseResult.openAPI ?: throw IllegalStateException("Failed to load OpenAPI spec from openapi.yaml")
     }
 }

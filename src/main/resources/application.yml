@@ -1,6 +1,8 @@
 spring:
   application:
     name: kafka-dlq-inspector
+  main:
+    banner-mode: "off"
   kafka:
     bootstrap-servers:
       - localhost:9092

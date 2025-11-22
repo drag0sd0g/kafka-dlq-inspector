@@ -32,7 +32,6 @@ class AggregationService(
         filters: SearchFilters,
         limitPerTopic: Int = defaultLimitPerTopic,
     ): AggregationResult {
-        // Discover topics if none specified
         val topics = filters.topics.ifEmpty { topicDiscovery.discover().map { it.name } }
         val messages = readerService.readMessages(topics, filters, limitPerTopic)
 

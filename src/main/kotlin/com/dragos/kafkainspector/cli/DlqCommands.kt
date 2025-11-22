@@ -1,5 +1,6 @@
 package com.dragos.kafkainspector.cli
 
+import com.dragos.kafkainspector.kafka.DlqTopicDiscovery
 import com.dragos.kafkainspector.model.ReplayRequest
 import com.dragos.kafkainspector.model.SearchFilters
 import com.dragos.kafkainspector.service.AggregationService
@@ -46,7 +47,7 @@ class DlqCommand : Runnable {
 @Component
 @CommandLine.Command(name = "list-topics", description = ["List DLQ topics"])
 class ListTopicsCommand(
-    private val topicDiscovery: com.dragos.kafkainspector.kafka.DlqTopicDiscovery,
+    private val topicDiscovery: DlqTopicDiscovery,
 ) : Callable<Int> {
     override fun call(): Int {
         // Discover all DLQ topics matching the configured pattern

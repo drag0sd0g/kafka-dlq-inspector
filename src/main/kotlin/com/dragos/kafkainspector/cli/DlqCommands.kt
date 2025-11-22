@@ -9,7 +9,6 @@ import com.dragos.kafkainspector.service.SearchService
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.SpringApplication
 import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import picocli.CommandLine
@@ -199,7 +198,6 @@ class CliRunner(
         logger.info("CLI execution completed with exit code: $exitCode")
 
         // Exit the application after CLI execution
-        SpringApplication.exit(applicationContext, { exitCode })
         exitProcess(exitCode)
     }
 }

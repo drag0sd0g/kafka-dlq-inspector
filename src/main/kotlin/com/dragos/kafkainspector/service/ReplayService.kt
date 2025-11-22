@@ -32,6 +32,8 @@ class ReplayService(
         val filters = request.filters ?: return emptyList()
         val messages = messageReaderService.readMessages(listOf(request.sourceTopic), filters, replayMaxMessages)
 
+        logger.info("Read {} messages from source topic {}", messages.size, request.sourceTopic)
+
         // If dry-run mode, only return what would be replayed without actually producing messages
         if (request.dryRun) {
             logger.info("Dry-run replay for {} messages from {} to {}", messages.size, request.sourceTopic, request.destinationTopic)
@@ -58,13 +60,22 @@ class ReplayService(
                 val sleepTime = rateLimiterNanos - elapsed
                 if (sleepTime > 0) TimeUnit.NANOSECONDS.sleep(sleepTime)
             }
-            // Produce message to destination topic preserving partition and key
-            val producerRecord = ProducerRecord(request.destinationTopic, msg.partition, msg.key, msg.value)
-            kafkaTemplate.send(producerRecord).get(5, TimeUnit.SECONDS)
-            meterRegistry.counter("dlq.replay.attempts", "topic", request.destinationTopic).increment()
-            results.add("Replayed:${msg.topic}:${msg.partition}:${msg.offset}")
+            logger.debug("Sending message from {}:{}:{} to {}", msg.topic, msg.partition, msg.offset, request.destinationTopic)
+            // Produce message to destination topic with key (let Kafka decide partition based on key)
+            // We don't preserve the exact partition as the destination topic may have different partitioning
+            val producerRecord = ProducerRecord(request.destinationTopic, msg.key, msg.value)
+            try {
+                kafkaTemplate.send(producerRecord).get(5, TimeUnit.SECONDS)
+                meterRegistry.counter("dlq.replay.attempts", "topic", request.destinationTopic).increment()
+                results.add("Replayed:${msg.topic}:${msg.partition}:${msg.offset}")
+                logger.debug("Successfully replayed message from {}:{}:{}", msg.topic, msg.partition, msg.offset)
+            } catch (e: Exception) {
+                logger.error("Failed to replay message from {}:{}:{}: {}", msg.topic, msg.partition, msg.offset, e.message)
+                throw e
+            }
             lastSend = System.nanoTime()
         }
+        logger.info("Successfully replayed {} messages to {}", results.size, request.destinationTopic)
         return results
     }
 }

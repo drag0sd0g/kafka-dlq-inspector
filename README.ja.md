@@ -47,15 +47,14 @@ Gradle を使用して fat JAR をビルドします：
 
 ### サポートサービスの起動
 
-Docker Compose を使用して Kafka、Zookeeper、および Schema Registry を起動します：
+Docker Compose を使用して Kafka および Schema Registry を起動します：
 
 ```bash
-docker compose -f docker/docker-compose.yml up -d zookeeper kafka schema-registry
+docker compose -f docker/docker-compose.yml up -d kafka schema-registry
 ```
 
 これにより以下が起動されます：
 - Kafka ブローカー（ポート 9092）
-- Zookeeper（ポート 2181）
 - Schema Registry（ポート 8081）
 
 ### アプリケーションの実行
@@ -229,42 +228,6 @@ java -Dcli.enabled=true -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar dlq [c
 - `replay --source <topic> --destination <topic> --dry-run <true|false>` - メッセージをリプレイ
 - `export --topic <topic> --file <path>` - メッセージを JSON にエクスポート
 
-## テスト
-
-### ユニットテストと統合テスト
-
-すべてのテストを実行します（Docker が必要）：
-
-```bash
-./gradlew test
-```
-
-統合テストは Testcontainers を使用して自動的に Kafka インスタンスを起動します。
-
-### コードカバレッジ
-
-コードカバレッジレポートを生成します：
-
-```bash
-./gradlew jacocoTestReport
-```
-
-レポートは `build/reports/jacoco/test/html/index.html` で利用可能です
-
-### コードスタイル
-
-コードスタイルの準拠を確認します：
-
-```bash
-./gradlew ktlintCheck
-```
-
-コードを自動的にフォーマットします：
-
-```bash
-./gradlew ktlintFormat
-```
-
 ## 監視
 
 ### Prometheus メトリクス
@@ -283,53 +246,4 @@ scrape_configs:
     static_configs:
     - targets: ['localhost:8080']
     metrics_path: '/actuator/prometheus'
-```
-
-## トラブルシューティング
-
-### よくある問題
-
-**問題**: アプリケーションが Kafka に接続できない
-
-**解決策**: Kafka が実行中で、`application.yml` の `bootstrap-servers` 設定が正しいことを確認してください。
-
-```bash
-docker compose -f docker/docker-compose.yml ps
-```
-
-**問題**: DLQ トピックが発見されない
-
-**解決策**: トピック名が `kafka.dlq.topic-pattern` 設定の正規表現パターンに一致することを確認してください（デフォルト: `.*\.dlq`）。
-
-**問題**: メモリ不足エラー
-
-**解決策**: Java ヒープサイズを増やします：
-
-```bash
-java -Xmx2g -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar
-```
-
-## 開発
-
-### プロジェクト構造
-
-```
-src/
-├── main/
-│   ├── kotlin/com/dragos/kafkainspector/
-│   │   ├── api/              # REST コントローラー
-│   │   ├── cli/              # CLI コマンド
-│   │   ├── kafka/            # Kafka 統合
-│   │   ├── model/            # データモデル
-│   │   ├── service/          # ビジネスロジック
-│   │   └── util/             # ユーティリティ
-│   └── resources/
-│       ├── application.yml   # アプリケーション設定
-│       └── openapi.yaml      # OpenAPI 仕様
-└── test/                     # テスト
-```
-
-コードを提出する前に必ず以下を実行してください：
-```bash
-./gradlew ktlintFormat test
 ```

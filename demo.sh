@@ -252,28 +252,28 @@ demo_cli_commands() {
     log_section "Demonstrating CLI Commands"
     
     log_info "1. List all DLQ topics"
-    echo "Command: java -Dcli.enabled=true -Dspring.main.web-application-type=none -jar $APP_JAR dlq list-topics"
-    java -Dcli.enabled=true -Dspring.main.web-application-type=none -jar "$APP_JAR" dlq list-topics
+    echo "Command: java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none -jar $APP_JAR dlq list-topics"
+    java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none -jar "$APP_JAR" dlq list-topics
     echo ""
     
     log_info "2. Show messages from a specific topic"
-    echo "Command: java -Dcli.enabled=true -Dspring.main.web-application-type=none -jar $APP_JAR dlq show --topic ${TEST_TOPIC_PREFIX}-orders.dlq --limit 5"
-    java -Dcli.enabled=true -Dspring.main.web-application-type=none -jar "$APP_JAR" dlq show --topic "${TEST_TOPIC_PREFIX}-orders.dlq" --limit 5
+    echo "Command: java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none -jar $APP_JAR dlq show --topic ${TEST_TOPIC_PREFIX}-orders.dlq --limit 5"
+    java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none -jar "$APP_JAR" dlq show --topic "${TEST_TOPIC_PREFIX}-orders.dlq" --limit 5
     echo ""
     
     log_info "3. Show aggregated statistics"
-    echo "Command: java -Dcli.enabled=true -Dspring.main.web-application-type=none -jar $APP_JAR dlq aggregate"
-    java -Dcli.enabled=true -Dspring.main.web-application-type=none -jar "$APP_JAR" dlq aggregate
+    echo "Command: java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none -jar $APP_JAR dlq aggregate"
+    java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none -jar "$APP_JAR" dlq aggregate
     echo ""
     
     log_info "4. Replay messages (dry-run mode)"
-    echo "Command: java -Dcli.enabled=true -Dspring.main.web-application-type=none -jar $APP_JAR dlq replay --source ${TEST_TOPIC_PREFIX}-orders.dlq --destination ${TEST_TOPIC_PREFIX}-orders.retry --dry-run true"
-    java -Dcli.enabled=true -Dspring.main.web-application-type=none -jar "$APP_JAR" dlq replay --source "${TEST_TOPIC_PREFIX}-orders.dlq" --destination "${TEST_TOPIC_PREFIX}-orders.retry" --dry-run true
+    echo "Command: java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none -jar $APP_JAR dlq replay --source ${TEST_TOPIC_PREFIX}-orders.dlq --destination ${TEST_TOPIC_PREFIX}-orders.retry --dry-run"
+    java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none -jar "$APP_JAR" dlq replay --source "${TEST_TOPIC_PREFIX}-orders.dlq" --destination "${TEST_TOPIC_PREFIX}-orders.retry" --dry-run
     echo ""
     
     log_info "5. Export messages to JSON file"
-    echo "Command: java -Dcli.enabled=true -Dspring.main.web-application-type=none -jar $APP_JAR dlq export --topic ${TEST_TOPIC_PREFIX}-orders.dlq --file /tmp/orders-dlq.json"
-    java -Dcli.enabled=true -Dspring.main.web-application-type=none -jar "$APP_JAR" dlq export --topic "${TEST_TOPIC_PREFIX}-orders.dlq" --file /tmp/orders-dlq.json
+    echo "Command: java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none -jar $APP_JAR dlq export --topic ${TEST_TOPIC_PREFIX}-orders.dlq --file /tmp/orders-dlq.json"
+    java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none -jar "$APP_JAR" dlq export --topic "${TEST_TOPIC_PREFIX}-orders.dlq" --file /tmp/orders-dlq.json
     echo ""
     
     log_success "CLI commands demonstration completed"

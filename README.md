@@ -221,8 +221,10 @@ The application provides a comprehensive CLI for scripting and automation. To us
 ### Enabling CLI Mode
 
 ```bash
-java -Dcli.enabled=true -Dspring.main.web-application-type=none -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar dlq [command]
+java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar dlq [command]
 ```
+
+**Note**: The `-Dlogging.level.root=ERROR` flag suppresses Spring Boot startup logs, making CLI output clearer.
 
 ### Available Commands
 
@@ -231,7 +233,7 @@ java -Dcli.enabled=true -Dspring.main.web-application-type=none -jar build/libs/
 List all discovered DLQ topics with partition and message counts:
 
 ```bash
-java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none \
   -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
   dlq list-topics
 ```
@@ -247,7 +249,7 @@ test-service-payments.dlq partitions=1 count=5
 Display messages from a specific topic:
 
 ```bash
-java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none \
   -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
   dlq show --topic test-service-orders.dlq --limit 5
 ```
@@ -261,7 +263,7 @@ Options:
 Show aggregated statistics across all DLQ topics:
 
 ```bash
-java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none \
   -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
   dlq aggregate
 ```
@@ -277,12 +279,12 @@ Replay messages from a source DLQ topic to a destination topic:
 
 ```bash
 # Dry-run mode (preview without actually replaying)
-java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none \
   -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
   dlq replay --source test-orders.dlq --destination test-orders.retry --dry-run
 
-# Actual replay (omit --dry-run or set --dry-run false)
-java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+# Actual replay (omit --dry-run)
+java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none \
   -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
   dlq replay --source test-orders.dlq --destination test-orders.retry
 ```
@@ -297,7 +299,7 @@ Options:
 Export messages from a topic to a JSON file:
 
 ```bash
-java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none \
   -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
   dlq export --topic test-orders.dlq --file /tmp/orders.json
 ```
@@ -311,7 +313,7 @@ Options:
 For easier CLI usage, create a shell alias:
 
 ```bash
-alias dlq-inspector='java -Dcli.enabled=true -Dspring.main.web-application-type=none -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar dlq'
+alias dlq-inspector='java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar dlq'
 ```
 
 Then use commands more simply:
@@ -330,7 +332,7 @@ The CLI can be integrated into CI/CD pipelines for automated DLQ monitoring:
 # Example GitHub Actions workflow
 - name: Check DLQ Messages
   run: |
-    java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+    java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none \
       -jar kafka-dlq-inspector.jar dlq aggregate
 ```
 

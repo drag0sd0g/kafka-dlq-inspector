@@ -6,10 +6,11 @@ import com.dragos.kafkainspector.service.AggregationService
 import com.dragos.kafkainspector.service.ExportService
 import com.dragos.kafkainspector.service.ReplayService
 import com.dragos.kafkainspector.service.SearchService
-import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationContext
+import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import picocli.CommandLine
 import java.io.File
@@ -45,15 +46,15 @@ class DlqCommand : Runnable {
 @Component
 @CommandLine.Command(name = "list-topics", description = ["List DLQ topics"])
 class ListTopicsCommand(
-    private val aggregationService: AggregationService,
+    private val topicDiscovery: com.dragos.kafkainspector.kafka.DlqTopicDiscovery,
 ) : Callable<Int> {
     override fun call(): Int {
-        // Aggregate all topics to get counts and metadata
-        val topics = aggregationService.aggregate(SearchFilters(), 0).topics
+        // Discover all DLQ topics matching the configured pattern
+        val topics = topicDiscovery.discover()
         if (topics.isEmpty()) {
             println("No DLQ topics found")
         } else {
-            topics.forEach { println("${it.topic} partitions=${it.partitionCount} count=${it.messageCount}") }
+            topics.forEach { println("${it.name} partitions=${it.partitions} count=${it.messageCount}") }
         }
         System.out.flush()
         return 0
@@ -166,7 +167,8 @@ class ExportCommand(
 
 /**
  * Runner component that executes CLI commands when CLI mode is enabled.
- * This is initialized after Spring context startup and processes command-line arguments.
+ * This is initialized after the application is fully ready to ensure all beans
+ * and Kafka connectivity are properly established.
  */
 @Component
 class CliRunner(
@@ -178,7 +180,7 @@ class CliRunner(
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    @PostConstruct
+    @EventListener(ApplicationReadyEvent::class)
     fun runCli() {
         if (!enabled) return
 

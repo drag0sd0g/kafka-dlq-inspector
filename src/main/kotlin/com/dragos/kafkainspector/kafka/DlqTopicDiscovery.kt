@@ -4,6 +4,7 @@ import com.dragos.kafkainspector.model.DlqTopicInfo
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.ListOffsetsOptions
 import org.apache.kafka.common.TopicPartition
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
@@ -12,13 +13,20 @@ class DlqTopicDiscovery(
     private val adminClient: AdminClient,
     @Value("\${kafka.dlq.topic-pattern:.*}") private val topicPattern: String,
 ) {
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     fun discover(): List<DlqTopicInfo> {
-        val topics =
+        val allTopics =
             adminClient
                 .listTopics()
                 .names()
                 .get()
-                .filter { it.matches(topicPattern.toRegex()) }
+        logger.debug("All topics from Kafka: {}", allTopics)
+        logger.debug("Topic pattern: {}", topicPattern)
+
+        val topics = allTopics.filter { it.matches(topicPattern.toRegex()) }
+        logger.debug("Filtered topics matching pattern: {}", topics)
+
         if (topics.isEmpty()) return emptyList()
 
         val descriptions = adminClient.describeTopics(topics).allTopicNames().get()

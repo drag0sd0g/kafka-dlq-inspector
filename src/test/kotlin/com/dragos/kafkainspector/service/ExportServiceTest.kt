@@ -45,4 +45,53 @@ class ExportServiceTest {
         assertTrue(content.first().contains("topic"))
         assertTrue(content[1].contains("IllegalStateException"))
     }
+
+    @Test
+    fun `exports empty list to json`() {
+        val file = File.createTempFile("dlq", "json")
+
+        service.exportJson(emptyList(), file)
+
+        val content = file.readText()
+        assertTrue(content.trim() == "[ ]" || content.trim() == "[]")
+    }
+
+    @Test
+    fun `exports empty list to csv`() {
+        val file = File.createTempFile("dlq", "csv")
+
+        service.exportCsv(emptyList(), file)
+
+        val content = file.readLines()
+        assertTrue(content.first().contains("topic"))
+        assertTrue(content.size == 1) // Only header
+    }
+
+    @Test
+    fun `handles csv values with special characters`() {
+        val message =
+            DlqMessage(
+                topic = "topic",
+                partition = 0,
+                offset = 1,
+                key = "key".toByteArray(),
+                value = "value,with,commas".toByteArray(),
+                decodedValue = null,
+                headers = emptyMap(),
+                timestamp = 123,
+                ingestionTimestamp = null,
+                exceptionClass = "Exception",
+                exceptionMessage = "message,with,commas",
+                stackTrace = null,
+                originalTopic = null,
+                sizeBytes = 5,
+            )
+        val file = File.createTempFile("dlq", "csv")
+
+        service.exportCsv(listOf(message), file)
+
+        val content = file.readLines()
+        assertTrue(content.size == 2) // Header + 1 row
+        assertTrue(content[1].contains("commas"))
+    }
 }

@@ -184,8 +184,13 @@ class CliRunner(
     fun runCli() {
         if (!enabled) return
 
-        // Get all command-line arguments passed to the application
+        // Don't run CLI in test environment (when there are no actual CLI arguments)
+        // Tests use cli.enabled=true to test CLI services but don't provide actual CLI commands
         val args = applicationArguments.sourceArgs
+        if (args.isEmpty()) {
+            logger.debug("CLI enabled but no arguments provided, skipping CLI execution")
+            return
+        }
 
         // Filter out the "dlq" command name if it's the first argument
         // This prevents "Unmatched argument" errors since DlqCommand is already the root command

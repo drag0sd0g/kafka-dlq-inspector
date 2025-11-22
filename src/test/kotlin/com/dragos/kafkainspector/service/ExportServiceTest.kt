@@ -1,6 +1,7 @@
 package com.dragos.kafkainspector.service
 
 import com.dragos.kafkainspector.model.DlqMessage
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -53,7 +54,13 @@ class ExportServiceTest {
         service.exportJson(emptyList(), file)
 
         val content = file.readText()
-        assertTrue(content.trim() == "[ ]" || content.trim() == "[]")
+        // Parse JSON to verify it's an empty array
+        val parsed =
+            com.fasterxml.jackson.module.kotlin
+                .jacksonObjectMapper()
+                .readTree(content)
+        assertTrue(parsed.isArray)
+        assertEquals(0, parsed.size())
     }
 
     @Test
@@ -64,7 +71,7 @@ class ExportServiceTest {
 
         val content = file.readLines()
         assertTrue(content.first().contains("topic"))
-        assertTrue(content.size == 1) // Only header
+        assertEquals(1, content.size) // Only header
     }
 
     @Test
@@ -91,7 +98,7 @@ class ExportServiceTest {
         service.exportCsv(listOf(message), file)
 
         val content = file.readLines()
-        assertTrue(content.size == 2) // Header + 1 row
+        assertEquals(2, content.size) // Header + 1 row
         assertTrue(content[1].contains("commas"))
     }
 }

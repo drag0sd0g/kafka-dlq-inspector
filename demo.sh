@@ -123,8 +123,8 @@ build_application() {
 start_docker_services() {
     log_section "Starting Docker Services"
     
-    log_info "Starting Kafka and Schema Registry..."
-    docker compose -f docker/docker-compose.yml up -d kafka schema-registry
+    log_info "Starting Kafka, Schema Registry, Kafka UI..."
+    docker compose -f docker/docker-compose.yml up -d kafka schema-registry kafka-ui
     
     log_info "Waiting for Kafka to be ready..."
     sleep 10
@@ -419,6 +419,7 @@ show_summary() {
     echo "   - Health Endpoint: http://localhost:$APP_PORT/actuator/health"
     echo "   - Metrics: http://localhost:$APP_PORT/actuator/prometheus"
     echo "   - Application Logs: /tmp/kafka-dlq-inspector.log"
+    echo "   - Kafka UI: http://localhost:8082/"
     echo ""
     echo "🛠️  To stop all services, run:"
     echo "   ./demo.sh stop"

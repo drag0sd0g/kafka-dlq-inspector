@@ -9,10 +9,12 @@ import com.dragos.kafkainspector.service.SearchService
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.ApplicationContext
 import org.springframework.stereotype.Component
 import picocli.CommandLine
 import java.io.File
 import java.util.concurrent.Callable
+import kotlin.system.exitProcess
 
 /**
  * Main CLI command for Kafka DLQ Inspector.
@@ -48,7 +50,12 @@ class ListTopicsCommand(
     override fun call(): Int {
         // Aggregate all topics to get counts and metadata
         val topics = aggregationService.aggregate(SearchFilters(), 0).topics
-        topics.forEach { println("${it.topic} partitions=${it.partitionCount} count=${it.messageCount}") }
+        if (topics.isEmpty()) {
+            println("No DLQ topics found")
+        } else {
+            topics.forEach { println("${it.topic} partitions=${it.partitionCount} count=${it.messageCount}") }
+        }
+        System.out.flush()
         return 0
     }
 }
@@ -72,6 +79,7 @@ class ShowCommand(
         // Search for messages in the specified topic with the given limit
         val messages = searchService.search(SearchFilters(topics = listOf(topic)), limit)
         messages.forEach { println("${it.topic}:${it.partition}:${it.offset} ${String(it.value)}") }
+        System.out.flush()
         return 0
     }
 }
@@ -89,6 +97,7 @@ class AggregateCommand(
         // Compute aggregations across all DLQ topics
         val result = aggregationService.aggregate(SearchFilters())
         result.topics.forEach { println("${it.topic} count=${it.messageCount} exceptions=${it.exceptionCounts}") }
+        System.out.flush()
         return 0
     }
 }
@@ -121,6 +130,7 @@ class ReplayCommand(
         val request = ReplayRequest("default", source, destination, filters = SearchFilters(topics = listOf(source)), dryRun = dryRun)
         val responses = replayService.replay(request)
         responses.forEach { println(it) }
+        System.out.flush()
         return 0
     }
 }
@@ -149,6 +159,7 @@ class ExportCommand(
         // Export messages to JSON format
         exportService.exportJson(messages, file)
         println("Exported ${messages.size} messages to ${file.absolutePath}")
+        System.out.flush()
         return 0
     }
 }
@@ -163,6 +174,7 @@ class CliRunner(
     private val picocliFactory: CommandLine.IFactory,
     @Value("\${cli.enabled:false}") private val enabled: Boolean,
     private val applicationArguments: org.springframework.boot.ApplicationArguments,
+    private val applicationContext: ApplicationContext,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -182,7 +194,10 @@ class CliRunner(
                 args
             }
 
-        CommandLine(dlqCommand, picocliFactory).execute(*filteredArgs)
-        logger.info("CLI execution completed")
+        val exitCode = CommandLine(dlqCommand, picocliFactory).execute(*filteredArgs)
+        logger.info("CLI execution completed with exit code: $exitCode")
+
+        // Exit the application after CLI execution
+        exitProcess(exitCode)
     }
 }

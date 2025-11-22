@@ -33,7 +33,7 @@ class AggregationService(
         limitPerTopic: Int = defaultLimitPerTopic,
     ): AggregationResult {
         // Discover topics if none specified
-        val topics = if (filters.topics.isEmpty()) topicDiscovery.discover().map { it.name } else filters.topics
+        val topics = filters.topics.ifEmpty { topicDiscovery.discover().map { it.name } }
         val messages = readerService.readMessages(topics, filters, limitPerTopic)
 
         // Compute per-topic aggregations including exception counts and size statistics

@@ -110,9 +110,8 @@ class ReplayCommand(
 
     @CommandLine.Option(
         names = ["--dry-run"],
-        arity = "0..1",
+        arity = "0",
         fallbackValue = "true",
-        defaultValue = "false",
         description = ["Perform a dry run without actually replaying messages"],
     )
     var dryRun: Boolean = false

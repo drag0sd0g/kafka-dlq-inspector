@@ -1,6 +1,7 @@
 package com.dragos.kafkainspector.service
 
 import com.dragos.kafkainspector.model.DlqMessage
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -8,6 +9,7 @@ import java.io.File
 
 class ExportServiceTest {
     private val service = ExportService()
+    private val objectMapper = jacksonObjectMapper()
 
     @Test
     fun `exports messages to json`() {
@@ -55,10 +57,7 @@ class ExportServiceTest {
 
         val content = file.readText()
         // Parse JSON to verify it's an empty array
-        val parsed =
-            com.fasterxml.jackson.module.kotlin
-                .jacksonObjectMapper()
-                .readTree(content)
+        val parsed = objectMapper.readTree(content)
         assertTrue(parsed.isArray)
         assertEquals(0, parsed.size())
     }

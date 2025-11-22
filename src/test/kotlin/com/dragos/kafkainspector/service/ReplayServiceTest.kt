@@ -7,6 +7,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -162,7 +163,7 @@ class ReplayServiceTest {
                 filters = SearchFilters(),
             )
 
-        org.junit.jupiter.api.assertThrows<Exception> {
+        assertThrows<Exception> {
             service.replay(request)
         }
     }

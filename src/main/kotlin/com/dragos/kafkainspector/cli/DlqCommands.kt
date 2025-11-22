@@ -121,6 +121,7 @@ class ExportCommand(
 @Component
 class CliRunner(
     private val dlqCommand: DlqCommand,
+    private val picocliFactory: CommandLine.IFactory,
     @Value("\${cli.enabled:false}") private val enabled: Boolean,
     private val applicationArguments: org.springframework.boot.ApplicationArguments,
 ) {
@@ -130,7 +131,7 @@ class CliRunner(
     fun runCli() {
         if (!enabled) return
         val args = applicationArguments.sourceArgs
-        CommandLine(dlqCommand).execute(*args)
+        CommandLine(dlqCommand, picocliFactory).execute(*args)
         logger.info("CLI execution completed")
     }
 }

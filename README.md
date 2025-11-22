@@ -232,11 +232,7 @@ Available commands:
 
 ### Unit and Integration Tests
 
-Run all tests (requires Docker):
-
-```bash
-./gradlew test
-```
+More details [here](src/test/kotlin/com/dragos/kafkainspector/README.md).
 
 The integration tests use Testcontainers to spin up Kafka instances automatically.
 

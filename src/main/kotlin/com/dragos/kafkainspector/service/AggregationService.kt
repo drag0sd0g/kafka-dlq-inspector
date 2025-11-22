@@ -20,7 +20,7 @@ class AggregationService(
         filters: SearchFilters,
         limitPerTopic: Int = defaultLimitPerTopic,
     ): AggregationResult {
-        val topics = if (filters.topics.isEmpty()) topicDiscovery.discover().map { it.name } else filters.topics
+        val topics = filters.topics.ifEmpty { topicDiscovery.discover().map { it.name } }
         val messages = readerService.readMessages(topics, filters, limitPerTopic)
         val topicAgg =
             messages.groupBy { it.topic }.map { (topic, msgs) ->

@@ -10,23 +10,38 @@ import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
+/**
+ * Service for computing aggregated statistics on DLQ messages.
+ * Provides insights including message counts, exception types, size metrics, and time-based trends.
+ */
 @Service
 class AggregationService(
     private val topicDiscovery: DlqTopicDiscovery,
     private val readerService: MessageReaderService,
     @Value("\${kafka.aggregation.limit-per-topic:500}") private val defaultLimitPerTopic: Int,
 ) {
+    /**
+     * Compute aggregations for DLQ messages based on filters.
+     * Returns both per-topic statistics and time-windowed aggregations.
+     *
+     * @param filters Filtering criteria for messages to aggregate
+     * @param limitPerTopic Maximum messages to read per topic for aggregation
+     * @return Aggregation result containing topic-level and time-window statistics
+     */
     fun aggregate(
         filters: SearchFilters,
         limitPerTopic: Int = defaultLimitPerTopic,
     ): AggregationResult {
         val topics = filters.topics.ifEmpty { topicDiscovery.discover().map { it.name } }
         val messages = readerService.readMessages(topics, filters, limitPerTopic)
+
+        // Compute per-topic aggregations including exception counts and size statistics
         val topicAgg =
             messages.groupBy { it.topic }.map { (topic, msgs) ->
                 val exceptionCounts = msgs.groupingBy { it.exceptionClass ?: "unknown" }.eachCount().mapValues { it.value.toLong() }
                 val sizes = msgs.map { it.sizeBytes }.sorted()
                 val avg = if (sizes.isNotEmpty()) sizes.average() else 0.0
+                // Calculate 95th percentile of message sizes
                 val p95 = if (sizes.isNotEmpty()) sizes[(sizes.size * 95 / 100).coerceAtMost(sizes.lastIndex)] else 0
                 TopicAggregation(
                     topic = topic,
@@ -38,6 +53,7 @@ class AggregationService(
                 )
             }
 
+        // Compute time-window aggregations for the last hour using 5-minute windows
         val now = Instant.now()
         val windowStart = now.minus(1, ChronoUnit.HOURS).toEpochMilli()
         val windowAgg =
@@ -46,7 +62,7 @@ class AggregationService(
                 grouped.map { (bucket, groupMsgs) ->
                     val start = bucket * 300000
                     val end = start + 300000
-                    val rate = groupMsgs.size / 300.0
+                    val rate = groupMsgs.size / 300.0 // Messages per second
                     TimeWindowAggregation(topic, start, end, groupMsgs.size.toLong(), rate)
                 }
             }

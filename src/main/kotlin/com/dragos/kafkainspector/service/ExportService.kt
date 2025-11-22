@@ -6,10 +6,21 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.springframework.stereotype.Service
 import java.io.File
 
+/**
+ * Service for exporting DLQ messages to various file formats.
+ * Supports JSON and CSV exports for offline analysis and archival.
+ */
 @Service
 class ExportService {
     private val objectMapper = ObjectMapper().registerKotlinModule()
 
+    /**
+     * Export DLQ messages to a JSON file with pretty printing.
+     *
+     * @param messages List of DLQ messages to export
+     * @param file Target file for the JSON export
+     * @return The file that was written to
+     */
     fun exportJson(
         messages: List<DlqMessage>,
         file: File,
@@ -18,6 +29,14 @@ class ExportService {
         return file
     }
 
+    /**
+     * Export DLQ messages to a CSV file with headers.
+     * Includes all message metadata and exception information.
+     *
+     * @param messages List of DLQ messages to export
+     * @param file Target file for the CSV export
+     * @return The file that was written to
+     */
     fun exportCsv(
         messages: List<DlqMessage>,
         file: File,

@@ -14,6 +14,10 @@ import picocli.CommandLine
 import java.io.File
 import java.util.concurrent.Callable
 
+/**
+ * Main CLI command for Kafka DLQ Inspector.
+ * This serves as the root command with multiple subcommands for different operations.
+ */
 @Component
 @CommandLine.Command(
     name = "dlq",
@@ -32,63 +36,88 @@ class DlqCommand : Runnable {
     }
 }
 
+/**
+ * CLI command to list all discovered DLQ topics.
+ * Displays topic name, partition count, and message count for each topic.
+ */
 @Component
 @CommandLine.Command(name = "list-topics", description = ["List DLQ topics"])
 class ListTopicsCommand(
     private val aggregationService: AggregationService,
 ) : Callable<Int> {
     override fun call(): Int {
+        // Aggregate all topics to get counts and metadata
         val topics = aggregationService.aggregate(SearchFilters(), 0).topics
         topics.forEach { println("${it.topic} partitions=${it.partitionCount} count=${it.messageCount}") }
         return 0
     }
 }
 
+/**
+ * CLI command to display messages from a specific DLQ topic.
+ * Shows messages with their topic, partition, offset, and payload.
+ */
 @Component
 @CommandLine.Command(name = "show", description = ["Show messages"])
 class ShowCommand(
     private val searchService: SearchService,
 ) : Callable<Int> {
-    @CommandLine.Option(names = ["--topic"], required = true)
+    @CommandLine.Option(names = ["--topic"], required = true, description = ["Topic name to read messages from"])
     lateinit var topic: String
 
-    @CommandLine.Option(names = ["--limit"], defaultValue = "20")
+    @CommandLine.Option(names = ["--limit"], defaultValue = "20", description = ["Maximum number of messages to display"])
     var limit: Int = 20
 
     override fun call(): Int {
+        // Search for messages in the specified topic with the given limit
         val messages = searchService.search(SearchFilters(topics = listOf(topic)), limit)
         messages.forEach { println("${it.topic}:${it.partition}:${it.offset} ${String(it.value)}") }
         return 0
     }
 }
 
+/**
+ * CLI command to compute and display aggregated statistics for DLQ messages.
+ * Shows message counts and exception type statistics per topic.
+ */
 @Component
 @CommandLine.Command(name = "aggregate", description = ["Aggregate DLQ messages"])
 class AggregateCommand(
     private val aggregationService: AggregationService,
 ) : Callable<Int> {
     override fun call(): Int {
+        // Compute aggregations across all DLQ topics
         val result = aggregationService.aggregate(SearchFilters())
         result.topics.forEach { println("${it.topic} count=${it.messageCount} exceptions=${it.exceptionCounts}") }
         return 0
     }
 }
 
+/**
+ * CLI command to replay messages from a source DLQ topic to a destination topic.
+ * Supports dry-run mode to preview messages without actually replaying them.
+ */
 @Component
 @CommandLine.Command(name = "replay", description = ["Replay DLQ messages"])
 class ReplayCommand(
     private val replayService: ReplayService,
 ) : Callable<Int> {
-    @CommandLine.Option(names = ["--source"], required = true)
+    @CommandLine.Option(names = ["--source"], required = true, description = ["Source DLQ topic to replay from"])
     lateinit var source: String
 
-    @CommandLine.Option(names = ["--destination"], required = true)
+    @CommandLine.Option(names = ["--destination"], required = true, description = ["Destination topic to replay messages to"])
     lateinit var destination: String
 
-    @CommandLine.Option(names = ["--dry-run"], defaultValue = "true")
-    var dryRun: Boolean = true
+    @CommandLine.Option(
+        names = ["--dry-run"],
+        arity = "0",
+        fallbackValue = "true",
+        description = ["Perform a dry run without actually replaying messages"],
+    )
+    var dryRun: Boolean = false
 
     override fun call(): Int {
+        // Create replay request with source, destination, and dry-run settings
         val request = ReplayRequest("default", source, destination, filters = SearchFilters(topics = listOf(source)), dryRun = dryRun)
         val responses = replayService.replay(request)
         responses.forEach { println(it) }
@@ -96,6 +125,10 @@ class ReplayCommand(
     }
 }
 
+/**
+ * CLI command to export DLQ messages to a JSON file.
+ * Useful for offline analysis or archival purposes.
+ */
 @Component
 @CommandLine.Command(name = "export", description = ["Export DLQ messages to JSON"])
 class ExportCommand(
@@ -103,21 +136,27 @@ class ExportCommand(
     private val exportService: ExportService,
     @Value("\${cli.default-limit:500}") private val defaultLimit: Int,
 ) : Callable<Int> {
-    @CommandLine.Option(names = ["--topic"], required = true)
+    @CommandLine.Option(names = ["--topic"], required = true, description = ["Topic to export messages from"])
     lateinit var topic: String
 
-    @CommandLine.Option(names = ["--file"], defaultValue = "dlq.json")
+    @CommandLine.Option(names = ["--file"], defaultValue = "dlq.json", description = ["Output file path"])
     lateinit var fileName: String
 
     override fun call(): Int {
+        // Search for messages in the specified topic
         val messages = searchService.search(SearchFilters(topics = listOf(topic)), defaultLimit)
         val file = File(fileName)
+        // Export messages to JSON format
         exportService.exportJson(messages, file)
         println("Exported ${messages.size} messages to ${file.absolutePath}")
         return 0
     }
 }
 
+/**
+ * Runner component that executes CLI commands when CLI mode is enabled.
+ * This is initialized after Spring context startup and processes command-line arguments.
+ */
 @Component
 class CliRunner(
     private val dlqCommand: DlqCommand,
@@ -130,8 +169,20 @@ class CliRunner(
     @PostConstruct
     fun runCli() {
         if (!enabled) return
+
+        // Get all command-line arguments passed to the application
         val args = applicationArguments.sourceArgs
-        CommandLine(dlqCommand, picocliFactory).execute(*args)
+
+        // Filter out the "dlq" command name if it's the first argument
+        // This prevents "Unmatched argument" errors since DlqCommand is already the root command
+        val filteredArgs =
+            if (args.isNotEmpty() && args[0] == "dlq") {
+                args.drop(1).toTypedArray()
+            } else {
+                args
+            }
+
+        CommandLine(dlqCommand, picocliFactory).execute(*filteredArgs)
         logger.info("CLI execution completed")
     }
 }

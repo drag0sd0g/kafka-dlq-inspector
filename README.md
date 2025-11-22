@@ -97,6 +97,8 @@ This script will:
 - Demonstrate REST API endpoints
 - Show advanced usage scenarios
 
+For detailed information about the demo script and manual testing scenarios, see the [Demo Guide](DEMO_GUIDE.md).
+
 To stop all services:
 
 ```bash
@@ -214,19 +216,123 @@ src/main/resources/openapi.yaml
 
 ## CLI Usage
 
-Enable the CLI by setting the `cli.enabled` property:
+The application provides a comprehensive CLI for scripting and automation. To use the CLI, you must disable the web application and enable CLI mode.
+
+### Enabling CLI Mode
 
 ```bash
-java -Dcli.enabled=true -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar dlq [command]
+java -Dcli.enabled=true -Dspring.main.web-application-type=none -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar dlq [command]
 ```
 
-Available commands:
+### Available Commands
 
-- `list-topics` - List all DLQ topics
-- `show --topic <topic> --limit <n>` - Show messages from a topic
-- `aggregate` - Show aggregated statistics
-- `replay --source <topic> --destination <topic> --dry-run <true|false>` - Replay messages
-- `export --topic <topic> --file <path>` - Export messages to JSON
+#### 1. List Topics
+
+List all discovered DLQ topics with partition and message counts:
+
+```bash
+java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+  -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
+  dlq list-topics
+```
+
+Example output:
+```
+test-service-orders.dlq partitions=2 count=10
+test-service-payments.dlq partitions=1 count=5
+```
+
+#### 2. Show Messages
+
+Display messages from a specific topic:
+
+```bash
+java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+  -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
+  dlq show --topic test-service-orders.dlq --limit 5
+```
+
+Options:
+- `--topic` (required): Topic name to read from
+- `--limit` (optional): Maximum number of messages to display (default: 20)
+
+#### 3. Aggregate Statistics
+
+Show aggregated statistics across all DLQ topics:
+
+```bash
+java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+  -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
+  dlq aggregate
+```
+
+This displays:
+- Message counts per topic
+- Exception type distribution
+- Size statistics
+
+#### 4. Replay Messages
+
+Replay messages from a source DLQ topic to a destination topic:
+
+```bash
+# Dry-run mode (preview without actually replaying)
+java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+  -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
+  dlq replay --source test-orders.dlq --destination test-orders.retry --dry-run
+
+# Actual replay (omit --dry-run or set --dry-run false)
+java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+  -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
+  dlq replay --source test-orders.dlq --destination test-orders.retry
+```
+
+Options:
+- `--source` (required): Source DLQ topic to replay from
+- `--destination` (required): Destination topic to replay to
+- `--dry-run` (optional): If present, performs a dry run without actually replaying (default: false)
+
+#### 5. Export Messages
+
+Export messages from a topic to a JSON file:
+
+```bash
+java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+  -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
+  dlq export --topic test-orders.dlq --file /tmp/orders.json
+```
+
+Options:
+- `--topic` (required): Topic to export from
+- `--file` (optional): Output file path (default: dlq.json)
+
+### Shell Alias for Convenience
+
+For easier CLI usage, create a shell alias:
+
+```bash
+alias dlq-inspector='java -Dcli.enabled=true -Dspring.main.web-application-type=none -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar dlq'
+```
+
+Then use commands more simply:
+
+```bash
+dlq-inspector list-topics
+dlq-inspector show --topic my-service.dlq --limit 10
+dlq-inspector aggregate
+```
+
+### CI/CD Integration
+
+The CLI can be integrated into CI/CD pipelines for automated DLQ monitoring:
+
+```yaml
+# Example GitHub Actions workflow
+- name: Check DLQ Messages
+  run: |
+    java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+      -jar kafka-dlq-inspector.jar dlq aggregate
+```
 
 ## Testing
 

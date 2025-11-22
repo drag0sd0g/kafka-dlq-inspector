@@ -7,6 +7,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -93,5 +94,77 @@ class ReplayServiceTest {
         assertEquals(listOf("Replayed:src:0:1"), result)
         assertTrue(meterRegistry.find("dlq.replay.attempts").counter()!!.count() > 0)
         verify(kafkaTemplate).send(any<org.apache.kafka.clients.producer.ProducerRecord<ByteArray, ByteArray>>())
+    }
+
+    @Test
+    fun `returns empty list when filters are null`() {
+        val request =
+            ReplayRequest(
+                cluster = "local",
+                sourceTopic = "src",
+                destinationTopic = "dest",
+                dryRun = false,
+                filters = null,
+            )
+
+        val result = service.replay(request)
+
+        assertEquals(emptyList<String>(), result)
+    }
+
+    @Test
+    fun `returns empty list when no messages found`() {
+        whenever(reader.readMessages(any(), any(), any(), any())).thenReturn(emptyList())
+
+        val request =
+            ReplayRequest(
+                cluster = "local",
+                sourceTopic = "src",
+                destinationTopic = "dest",
+                dryRun = false,
+                filters = SearchFilters(),
+            )
+
+        val result = service.replay(request)
+
+        assertEquals(emptyList<String>(), result)
+    }
+
+    @Test
+    fun `throws exception when kafka send fails`() {
+        val message =
+            DlqMessage(
+                topic = "src",
+                partition = 0,
+                offset = 1,
+                key = null,
+                value = "payload".toByteArray(),
+                decodedValue = null,
+                headers = emptyMap(),
+                timestamp = 0,
+                ingestionTimestamp = null,
+                exceptionClass = null,
+                exceptionMessage = null,
+                stackTrace = null,
+                originalTopic = null,
+                sizeBytes = 7L,
+            )
+        whenever(reader.readMessages(any(), any(), any(), any())).thenReturn(listOf(message))
+        val future = CompletableFuture<SendResult<ByteArray, ByteArray>>()
+        future.completeExceptionally(RuntimeException("Send failed"))
+        whenever(kafkaTemplate.send(any<org.apache.kafka.clients.producer.ProducerRecord<ByteArray, ByteArray>>())).thenReturn(future)
+
+        val request =
+            ReplayRequest(
+                cluster = "local",
+                sourceTopic = "src",
+                destinationTopic = "dest",
+                dryRun = false,
+                filters = SearchFilters(),
+            )
+
+        assertThrows<Exception> {
+            service.replay(request)
+        }
     }
 }

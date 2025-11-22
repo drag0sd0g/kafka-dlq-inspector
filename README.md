@@ -281,12 +281,12 @@ Replay messages from a source DLQ topic to a destination topic:
 # Dry-run mode (preview without actually replaying)
 java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none \
   -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
-  dlq replay --source test-orders.dlq --destination test-orders.retry --dry-run
+  dlq replay --source test-service-orders.dlq --destination test-service-orders.retry --dry-run
 
 # Actual replay (omit --dry-run)
 java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none \
   -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
-  dlq replay --source test-orders.dlq --destination test-orders.retry
+  dlq replay --source test-service-orders.dlq --destination test-service-orders.retry
 ```
 
 Options:
@@ -301,7 +301,7 @@ Export messages from a topic to a JSON file:
 ```bash
 java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none \
   -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
-  dlq export --topic test-orders.dlq --file /tmp/orders.json
+  dlq export --topic test-service-orders.dlq --file /tmp/orders.json
 ```
 
 Options:

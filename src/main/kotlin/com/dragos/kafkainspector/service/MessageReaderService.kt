@@ -33,8 +33,11 @@ class MessageReaderService(
         KafkaConsumer<ByteArray, ByteArray>(props).use { consumer ->
             val partitions =
                 topics.flatMap { topic ->
-                    consumer.partitionsFor(topic).map { TopicPartition(topic, it.partition()) }
+                    consumer.partitionsFor(topic)?.map { TopicPartition(topic, it.partition()) } ?: emptyList()
                 }
+            if (partitions.isEmpty()) {
+                return emptyList()
+            }
             consumer.assign(partitions)
             seekOffsets.forEach { (tp, offset) -> consumer.seek(tp, offset) }
             val messages = mutableListOf<DlqMessage>()

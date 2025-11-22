@@ -277,14 +277,14 @@ java -Dcli.enabled=true -Dspring.main.web-application-type=none \
 
 ```bash
 # ドライランモード（実際にリプレイせずにプレビュー）
-java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none \
   -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
-  dlq replay --source test-orders.dlq --destination test-orders.retry --dry-run
+  dlq replay --source test-service-orders.dlq --destination test-service-orders.retry --dry-run
 
-# 実際のリプレイ（--dry-run を省略するか --dry-run false を設定）
-java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+# 実際のリプレイ（--dry-run を省略）
+java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none \
   -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
-  dlq replay --source test-orders.dlq --destination test-orders.retry
+  dlq replay --source test-service-orders.dlq --destination test-service-orders.retry
 ```
 
 オプション：
@@ -297,9 +297,9 @@ java -Dcli.enabled=true -Dspring.main.web-application-type=none \
 トピックから JSON ファイルにメッセージをエクスポートします：
 
 ```bash
-java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+java -Dcli.enabled=true -Dlogging.level.root=ERROR -Dspring.main.web-application-type=none \
   -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
-  dlq export --topic test-orders.dlq --file /tmp/orders.json
+  dlq export --topic test-service-orders.dlq --file /tmp/orders.json
 ```
 
 オプション：

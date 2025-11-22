@@ -90,4 +90,44 @@ class AggregationServiceTest {
 
         assertTrue(result.windows.any { it.topic == "topicA" && it.messageCount > 0 })
     }
+
+    @Test
+    fun `handles empty message list`() {
+        whenever(discovery.discover()).thenReturn(emptyList())
+        whenever(reader.readMessages(any(), any(), any(), any())).thenReturn(emptyList())
+
+        val result = service.aggregate(SearchFilters())
+
+        assertTrue(result.topics.isEmpty())
+        assertTrue(result.windows.isEmpty())
+    }
+
+    @Test
+    fun `handles messages without exception class`() {
+        val message =
+            DlqMessage(
+                topic = "topicA",
+                partition = 0,
+                offset = 0,
+                key = null,
+                value = "test".toByteArray(),
+                decodedValue = "test",
+                headers = emptyMap(),
+                timestamp = Instant.now().toEpochMilli(),
+                ingestionTimestamp = null,
+                exceptionClass = null,
+                exceptionMessage = null,
+                stackTrace = null,
+                originalTopic = null,
+                sizeBytes = 4,
+            )
+        whenever(discovery.discover()).thenReturn(listOf(DlqTopicInfo("topicA", 1, 0, null)))
+        whenever(reader.readMessages(any(), any(), any(), any())).thenReturn(listOf(message))
+
+        val result = service.aggregate(SearchFilters())
+
+        assertEquals(1, result.topics.size)
+        val topicA = result.topics.first()
+        assertEquals(mapOf("unknown" to 1L), topicA.exceptionCounts)
+    }
 }

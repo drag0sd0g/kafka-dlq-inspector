@@ -38,4 +38,32 @@ class SearchServiceTest {
         assertEquals(expected, result)
         verify(reader).readMessages(any(), any(), any(), any())
     }
+
+    @Test
+    fun `uses default limit when not specified`() {
+        val filters = SearchFilters(topics = listOf("dlq"))
+        val message =
+            DlqMessage(
+                topic = "dlq",
+                partition = 0,
+                offset = 0,
+                key = null,
+                value = "test".toByteArray(),
+                decodedValue = null,
+                headers = emptyMap(),
+                timestamp = 0,
+                ingestionTimestamp = null,
+                exceptionClass = null,
+                exceptionMessage = null,
+                stackTrace = null,
+                originalTopic = null,
+                sizeBytes = 4,
+            )
+        whenever(reader.readMessages(any(), any(), any(), any())).thenReturn(listOf(message))
+
+        val result = service.search(filters)
+
+        assertEquals(1, result.size)
+        verify(reader).readMessages(any(), any(), any(), any())
+    }
 }

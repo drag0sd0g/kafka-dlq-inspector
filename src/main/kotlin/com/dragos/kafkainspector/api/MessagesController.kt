@@ -13,6 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
+/**
+ * REST controller for DLQ message operations.
+ * Provides endpoints to retrieve and filter messages from DLQ topics.
+ */
 @RestController
 @RequestMapping("/api/topics")
 class MessagesController(
@@ -20,6 +24,18 @@ class MessagesController(
     private val messageReaderService: MessageReaderService,
     @Value("\${api.pagination.default-page-size:50}") private val defaultPageSize: Int,
 ) {
+    /**
+     * List messages from a specific DLQ topic with pagination and filtering.
+     * Supports filtering by partition, offset range, and pagination.
+     *
+     * @param topic Topic name to retrieve messages from
+     * @param partition Optional partition filter
+     * @param offsetFrom Optional minimum offset (inclusive)
+     * @param offsetTo Optional maximum offset (inclusive)
+     * @param page Page number (0-indexed)
+     * @param size Optional page size (defaults to configured default)
+     * @return Paginated response containing messages and pagination metadata
+     */
     @GetMapping("/{topic}/messages")
     fun listMessages(
         @PathVariable
@@ -43,11 +59,20 @@ class MessagesController(
                 offsetFrom = offsetFrom,
                 offsetTo = offsetTo,
             )
+        // Fetch enough messages to fill the requested page
         val result = searchService.search(filters, pageSize * (page + 1))
         val slice = result.drop(page * pageSize).take(pageSize)
         return PageResponse(slice, page, pageSize, result.size)
     }
 
+    /**
+     * Retrieve a specific message by topic, partition, and offset.
+     *
+     * @param topic Topic name
+     * @param partition Partition number
+     * @param offset Message offset
+     * @return The requested message, or null if not found
+     */
     @GetMapping("/{topic}/messages/{partition}/{offset}")
     fun getMessage(
         @PathVariable
@@ -58,6 +83,7 @@ class MessagesController(
         offset: Long,
     ): DlqMessage? {
         val filters = SearchFilters(topics = listOf(topic), partitions = listOf(partition), offsetFrom = offset, offsetTo = offset)
+        // Seek directly to the specific offset
         val seek = mapOf(TopicPartition(topic, partition) to offset)
         return messageReaderService.readMessages(listOf(topic), filters, 1, seek).firstOrNull()
     }

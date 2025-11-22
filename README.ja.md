@@ -90,12 +90,14 @@ open http://localhost:8080/swagger-ui.html
 ```
 
 このスクリプトは以下を行います：
-- すべての依存関係を起動
+- すべての依存関係を起動（KRaft モードの Kafka と Schema Registry）
 - アプリケーションをビルドして実行
 - テスト用の DLQ トピックとサンプルデータを作成
 - CLI コマンドを実演
 - REST API エンドポイントを実演
 - 高度な使用シナリオを表示
+
+デモスクリプトと手動テストシナリオの詳細については、[デモガイド](DEMO_GUIDE.md)を参照してください。
 
 サービスを停止するには：
 
@@ -214,19 +216,123 @@ src/main/resources/openapi.yaml
 
 ## CLI の使用
 
-`cli.enabled` プロパティを設定して CLI を有効にします：
+アプリケーションは、スクリプト化と自動化のための包括的な CLI を提供しています。CLI を使用するには、Web アプリケーションを無効にし、CLI モードを有効にする必要があります。
+
+### CLI モードの有効化
 
 ```bash
-java -Dcli.enabled=true -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar dlq [command]
+java -Dcli.enabled=true -Dspring.main.web-application-type=none -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar dlq [command]
 ```
 
-利用可能なコマンド：
+### 利用可能なコマンド
 
-- `list-topics` - すべての DLQ トピックをリスト
-- `show --topic <topic> --limit <n>` - トピックからメッセージを表示
-- `aggregate` - 集約統計を表示
-- `replay --source <topic> --destination <topic> --dry-run <true|false>` - メッセージをリプレイ
-- `export --topic <topic> --file <path>` - メッセージを JSON にエクスポート
+#### 1. トピックのリスト表示
+
+パーティション数とメッセージ数を含む、発見されたすべての DLQ トピックをリストします：
+
+```bash
+java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+  -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
+  dlq list-topics
+```
+
+出力例：
+```
+test-service-orders.dlq partitions=2 count=10
+test-service-payments.dlq partitions=1 count=5
+```
+
+#### 2. メッセージの表示
+
+特定のトピックからメッセージを表示します：
+
+```bash
+java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+  -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
+  dlq show --topic test-service-orders.dlq --limit 5
+```
+
+オプション：
+- `--topic`（必須）：読み取り元のトピック名
+- `--limit`（オプション）：表示する最大メッセージ数（デフォルト：20）
+
+#### 3. 統計の集約
+
+すべての DLQ トピックの集約統計を表示します：
+
+```bash
+java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+  -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
+  dlq aggregate
+```
+
+表示内容：
+- トピックごとのメッセージ数
+- 例外タイプの分布
+- サイズ統計
+
+#### 4. メッセージのリプレイ
+
+ソース DLQ トピックから宛先トピックへメッセージをリプレイします：
+
+```bash
+# ドライランモード（実際にリプレイせずにプレビュー）
+java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+  -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
+  dlq replay --source test-orders.dlq --destination test-orders.retry --dry-run
+
+# 実際のリプレイ（--dry-run を省略するか --dry-run false を設定）
+java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+  -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
+  dlq replay --source test-orders.dlq --destination test-orders.retry
+```
+
+オプション：
+- `--source`（必須）：リプレイ元のソース DLQ トピック
+- `--destination`（必須）：リプレイ先の宛先トピック
+- `--dry-run`（オプション）：指定された場合、実際にリプレイせずにドライランを実行（デフォルト：false）
+
+#### 5. メッセージのエクスポート
+
+トピックから JSON ファイルにメッセージをエクスポートします：
+
+```bash
+java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+  -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar \
+  dlq export --topic test-orders.dlq --file /tmp/orders.json
+```
+
+オプション：
+- `--topic`（必須）：エクスポート元のトピック
+- `--file`（オプション）：出力ファイルパス（デフォルト：dlq.json）
+
+### 便利なシェルエイリアス
+
+CLI を簡単に使用するために、シェルエイリアスを作成します：
+
+```bash
+alias dlq-inspector='java -Dcli.enabled=true -Dspring.main.web-application-type=none -jar build/libs/kafka-dlq-inspector-0.1.0-all.jar dlq'
+```
+
+その後、コマンドをより簡単に使用できます：
+
+```bash
+dlq-inspector list-topics
+dlq-inspector show --topic my-service.dlq --limit 10
+dlq-inspector aggregate
+```
+
+### CI/CD 統合
+
+CLI は、自動化された DLQ 監視のために CI/CD パイプラインに統合できます：
+
+```yaml
+# GitHub Actions ワークフローの例
+- name: Check DLQ Messages
+  run: |
+    java -Dcli.enabled=true -Dspring.main.web-application-type=none \
+      -jar kafka-dlq-inspector.jar dlq aggregate
+```
 
 ## 監視
 

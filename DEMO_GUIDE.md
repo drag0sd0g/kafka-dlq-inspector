@@ -1,5 +1,7 @@
 # Demo Script Guide
 
+English | [日本語](DEMO_GUIDE.ja.md)
+
 This guide explains how to use the `demo.sh` script to demonstrate all features of the Kafka DLQ Inspector.
 
 ## Quick Start

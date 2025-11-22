@@ -61,4 +61,11 @@ class MessageReaderServiceIntegrationTest {
         assertFalse(messages.isEmpty())
         assertTrue(messages.any { String(it.value) == "value" })
     }
+
+    @Test
+    fun `should return empty list when topic does not exist`() {
+        // Test that reading from a non-existent topic doesn't crash and returns an empty list
+        val messages = readerService.readMessages(listOf("non-existent-topic"), SearchFilters(topics = listOf("non-existent-topic")), 10)
+        assertTrue(messages.isEmpty())
+    }
 }
